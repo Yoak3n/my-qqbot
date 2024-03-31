@@ -41,7 +41,10 @@ var (
 )
 
 func init() {
-	CK = config.Conf.Cookie
+	if config.Conf != nil {
+		CK = config.Conf.Cookie
+	}
+
 }
 
 func GetCookie() string {

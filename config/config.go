@@ -33,18 +33,19 @@ var (
 	Conf *Configuration
 )
 
-func init() {
+func InitConfig() {
 	k = koanf.New(".")
 	configPath := "config.yaml"
 	err := k.Load(file.Provider(configPath), yaml.Parser())
 	if err != nil {
-		return
+		panic(err)
 	}
 	Conf = &Configuration{
-		//Cookie: "",
-		//RefreshToken: "",
+		Cookie:       "",
+		RefreshToken: "",
 	}
 	loadToConfiguration()
+	fmt.Println("config loaded:", Conf)
 }
 func loadToConfiguration() {
 	Conf.Self = k.Int64("self")
