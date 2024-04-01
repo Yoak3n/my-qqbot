@@ -7,22 +7,22 @@ import (
 	"strings"
 )
 
-var PluginMap map[string]func(ctx *zero.Ctx)
+var pluginMap map[string]func(ctx *zero.Ctx)
 
 func init() {
-	PluginMap = make(map[string]func(ctx *zero.Ctx))
-	PluginMap["帮助"] = help
-	PluginMap["登录哔哩哔哩"] = loginBili
-	PluginMap["订阅直播间"] = listenBili
-	PluginMap["订阅动态"] = listenDynamic
-	PluginMap["ai对话"] = aiChat
-	PluginMap["重置对话"] = resetConversation
+	pluginMap = make(map[string]func(ctx *zero.Ctx))
+	pluginMap["帮助"] = help
+	pluginMap["登录哔哩哔哩"] = loginBili
+	pluginMap["订阅直播间"] = listenBili
+	pluginMap["订阅动态"] = listenDynamic
+	pluginMap["ai对话"] = aiChat
+	pluginMap["重置对话"] = resetConversation
 
 }
 
 func help(ctx *zero.Ctx) {
 	msgArr := make([]string, 0)
-	for k, _ := range PluginMap {
+	for k, _ := range pluginMap {
 		msgArr = append(msgArr, k)
 	}
 

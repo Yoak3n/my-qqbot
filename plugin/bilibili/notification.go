@@ -8,6 +8,7 @@ import (
 	"github.com/tidwall/gjson"
 	"my-qqbot/config"
 	"my-qqbot/model"
+	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
 	"time"
 )
@@ -43,17 +44,6 @@ var (
 
 func init() {
 	Notify = make(chan *Notification, 100)
-}
-
-func EnableSub(origin *From, targets ...int) error {
-	var err error
-	hub, err = newLiveRoomPlugin(origin, targets...)
-	if err != nil {
-		if hub == nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func AddSub(origin *From, targets ...int) error {
@@ -130,8 +120,12 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 			c.Client.OnLive(func(live *message.Live) {
 				// 处理直播开始事件
 				info, err := getRoomInfo(live.Roomid)
-				if err != nil {
+				if info == nil || err != nil {
+					logger.Logger.Errorln("获取直播间信息失败:", err)
 					return
+				}
+				if c.Room == nil {
+					logger.Logger.Errorln("直播间信息为空")
 				}
 				c.Room = info
 				msg := fmt.Sprintf("【%s】开始直播了！\n标题：%s\n观看链接：https://live.bilibili.com/%d", info.Name, info.Title, info.ShortId)
@@ -164,7 +158,7 @@ func getRoomInfo(id int) (*model.Room, error) {
 	}
 	room := &model.Room{
 		ShortId: id,
-		User:    model.User{},
+		User:    &model.User{},
 	}
 	result := gjson.ParseBytes(res)
 	if result.Get("code").Int() == 0 {
@@ -175,7 +169,7 @@ func getRoomInfo(id int) (*model.Room, error) {
 		room.Title = result.Get("data.title").String()
 		user := getUserInfo(room.User.UID)
 		if user != nil {
-			room.User = *user
+			room.User = user
 		}
 		return room, nil
 	}

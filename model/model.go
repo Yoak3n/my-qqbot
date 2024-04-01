@@ -1,7 +1,7 @@
 package model
 
 type Room struct {
-	User          `json:"user"`
+	*User         `json:"user"`
 	ShortId       int    `json:"short_id"`
 	LongId        int64  `json:"long_id"`
 	FollowerCount int64  `json:"follower_count"`

@@ -13,17 +13,17 @@ import (
 )
 
 func Register() {
-	zero.OnCommand("登录哔哩哔哩").Handle(PluginMap["登录哔哩哔哩"])
-	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(PluginMap["订阅直播间"])
-	zero.OnRegex(`^/订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(PluginMap["订阅直播间"])
-	zero.OnRegex(`^/订阅动态.*?(\S+)(.*?(\S+))*`).Handle(PluginMap["订阅动态"])
+	zero.OnCommand("登录哔哩哔哩").Handle(pluginMap["登录哔哩哔哩"])
+	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
+	zero.OnRegex(`^/订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
+	zero.OnRegex(`^/订阅动态.*?(\S+)(.*?(\S+))*`).Handle(pluginMap["订阅动态"])
 
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
 	})
 
-	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(PluginMap["重置对话"])
-	zero.OnCommandGroup([]string{"help", "帮助"}).Handle(PluginMap["帮助"])
-	zero.OnMessage().Handle(PluginMap["ai对话"])
+	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(pluginMap["重置对话"])
+	zero.OnCommandGroup([]string{"help", "帮助"}).Handle(pluginMap["帮助"])
+	zero.OnMessage().Handle(pluginMap["ai对话"])
 	go SendMessage(config.Conf.Self)
 }
 
