@@ -69,7 +69,7 @@ func AddSub(origin *From, targets ...int) error {
 	for _, target := range targets {
 		listener, err := genListener(target)
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
 		hub.targetRoomId = append(hub.targetRoomId, target)
 		hub.Listeners = append(hub.Listeners, listener)
@@ -100,6 +100,9 @@ func newLiveRoomPlugin(origin *From, targets ...int) (*LiveRoomPlugin, error) {
 }
 
 func genListener(id int) (*Client, error) {
+	if id == 0 {
+		return nil, errors.New("room id is empty")
+	}
 	c := client.NewClient(id)
 	cookie := config.Conf.Cookie
 	if cookie == "" {

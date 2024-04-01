@@ -116,7 +116,12 @@ func listenBili(ctx *zero.Ctx) {
 	if err != nil {
 		ctx.Send("订阅失败：" + err.Error())
 	}
-	ctx.SendChain(message.Text(fmt.Sprintf("订阅b站直播间%s成功！", strings.Join(targets, ","))))
+	if len(targets) == 1 {
+		ctx.Send("订阅" + targets[0] + "直播间成功！")
+	} else if len(targets) > 1 {
+		ctx.SendChain(message.Text(fmt.Sprintf("订阅b站直播间%s成功！", strings.Join(targets, ","))))
+	}
+
 }
 
 func listenDynamic(ctx *zero.Ctx) {
@@ -131,7 +136,7 @@ func listenDynamic(ctx *zero.Ctx) {
 				break
 			}
 		}
-		if !exist {
+		if !exist && s != "" {
 			handleTargets = append(handleTargets, s)
 		}
 	}
