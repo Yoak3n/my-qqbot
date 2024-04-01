@@ -13,34 +13,17 @@ import (
 )
 
 func Register() {
-	zero.OnCommand("登录哔哩哔哩").Handle(loginBili)
-	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(enableBili)
-	zero.OnRegex(`^/订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(listenBili)
-	zero.OnRegex(`^/订阅动态.*?(\S+)(.*?(\S+))*`).Handle(listenDynamic)
-	//zero.OnRegex(`^订阅动态.*?(\S+)`).Handle(func(ctx *zero.Ctx) {
-	//	arr := ctx.State["regex_matched"].([]string)
-	//	for _, s := range arr {
-	//		fmt.Println(s)
-	//	}
-	//
-	//})
+	zero.OnCommand("登录哔哩哔哩").Handle(PluginMap["登录哔哩哔哩"])
+	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(PluginMap["订阅直播间"])
+	zero.OnRegex(`^/订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(PluginMap["订阅直播间"])
+	zero.OnRegex(`^/订阅动态.*?(\S+)(.*?(\S+))*`).Handle(PluginMap["订阅动态"])
+
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
 	})
 
-	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(resetConversation)
-
-	zero.OnMessage().Handle(func(ctx *zero.Ctx) {
-		if strings.HasPrefix(ctx.Event.RawMessage, "/") {
-			return
-		}
-		r := &chat.ResponseBody{}
-		if ctx.Event.MessageType == "group" {
-			r = chat.Ask(ctx.Event.GroupID, ctx.Event.Message.String())
-		} else {
-			r = chat.Ask(ctx.Event.UserID, ctx.Event.Message.String())
-		}
-		ctx.SendChain(message.Text(r.Answer))
-	})
+	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(PluginMap["重置对话"])
+	zero.OnCommandGroup([]string{"help", "帮助"}).Handle(PluginMap["帮助"])
+	zero.OnMessage().Handle(PluginMap["ai对话"])
 	go SendMessage(config.Conf.Self)
 }
 
@@ -89,6 +72,7 @@ func loginBili(ctx *zero.Ctx) {
 
 	}
 }
+
 func listenBili(ctx *zero.Ctx) {
 	targets := ctx.State["regex_matched"].([]string)[1:]
 	//bilibili.NewLiveRoomPlugin()
@@ -164,34 +148,6 @@ func listenDynamic(ctx *zero.Ctx) {
 		ctx.Send("订阅" + t + "动态成功！")
 	}
 }
-func enableBili(ctx *zero.Ctx) {
-	targets := ctx.State["regex_matched"].([]string)[1:]
-	//bilibili.NewLiveRoomPlugin()
-	var roomsID []int
-	for _, target := range targets {
-		id, err := strconv.Atoi(target)
-		if err != nil {
-			ctx.Send("直播间ID错误！")
-		}
-		roomsID = append(roomsID, id)
-	}
-	from := &bilibili.From{}
-	if ctx.Event.MessageType == "group" {
-		from = &bilibili.From{
-			Id:      ctx.Event.GroupID,
-			Private: false,
-		}
-	} else {
-		from = &bilibili.From{
-			Id:      ctx.Event.UserID,
-			Private: true,
-		}
-	}
-	err := bilibili.EnableSub(from, roomsID...)
-	if err != nil {
-		ctx.Send("订阅失败：" + err.Error())
-	}
-}
 
 func resetConversation(ctx *zero.Ctx) {
 	ok := false
@@ -205,4 +161,17 @@ func resetConversation(ctx *zero.Ctx) {
 	} else {
 		ctx.SendChain(message.Text("重置对话失败"))
 	}
+}
+
+func aiChat(ctx *zero.Ctx) {
+	if strings.HasPrefix(ctx.Event.RawMessage, "/") {
+		return
+	}
+	r := &chat.ResponseBody{}
+	if ctx.Event.MessageType == "group" {
+		r = chat.Ask(ctx.Event.GroupID, ctx.Event.Message.String())
+	} else {
+		r = chat.Ask(ctx.Event.UserID, ctx.Event.Message.String())
+	}
+	ctx.SendChain(message.Text(r.Answer))
 }
