@@ -1,7 +1,6 @@
 package bilibili
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/Akegarasu/blivedm-go/client"
@@ -117,11 +116,6 @@ func genListener(id int) (*Client, error) {
 		return nil, errors.New("获取直播间信息失败,直播间可能不存在")
 	}
 	listener.Room = info
-	data, err := json.Marshal(info)
-	if err != nil {
-		return nil, errors.New("解析直播间信息失败")
-	}
-	fmt.Println(string(data))
 	return listener, nil
 }
 

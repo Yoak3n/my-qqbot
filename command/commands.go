@@ -152,6 +152,12 @@ func listenDynamic(ctx *zero.Ctx) {
 		}
 	}
 	bilibili.AddDynamic(*from, handleTargets...)
+	if len(handleTargets) == 1 {
+		ctx.Send("订阅" + handleTargets[0] + "动态成功！")
+	} else {
+		t := strings.Join(handleTargets, ",")
+		ctx.Send("订阅" + t + "动态成功！")
+	}
 }
 func enableBili(ctx *zero.Ctx) {
 	targets := ctx.State["regex_matched"].([]string)[1:]

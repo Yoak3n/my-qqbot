@@ -41,10 +41,7 @@ var (
 )
 
 func init() {
-	if config.Conf != nil {
-		CK = config.Conf.Cookie
-	}
-
+	CK = ""
 }
 
 func GetCookie() string {
@@ -59,6 +56,9 @@ func checkCookieNeedRefresh() (bool, int64, error) {
 	client := http.Client{}
 	req, _ := http.NewRequest("GET", uri, nil)
 	req.Header.Set("User-Agent", userAgent)
+	if CK == "" {
+		CK = config.Conf.Cookie
+	}
 	req.Header.Set("Cookie", CK)
 	res, err := client.Do(req)
 	if err != nil {
@@ -310,6 +310,9 @@ func login() (string, string) {
 
 func getCsrf() string {
 	reg := re.MustCompile(`bili_jct=([0-9a-zA-Z]+);`)
+	if CK == "" {
+		CK = config.Conf.Cookie
+	}
 	csrf := reg.FindStringSubmatch(CK)[1]
 	return csrf
 }

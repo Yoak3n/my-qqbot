@@ -2,12 +2,13 @@ package bilibili
 
 import (
 	"fmt"
-	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 const (
@@ -51,9 +52,7 @@ func AddDynamic(origin From, target ...string) {
 			Listener: make(map[From][]string),
 		}
 	}
-	for _, t := range target {
-		dynamicHub.Listener[origin] = append(dynamicHub.Listener[origin], t)
-	}
+	dynamicHub.Listener[origin] = append(dynamicHub.Listener[origin], target...)
 	go GetDynamicListLoop()
 }
 
@@ -110,7 +109,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 				UId:       item.Get("modules.module_author.mid").Int(),
 				Timestamp: item.Get("modules.module_author.pub_ts").Int(),
 				Id:        item.Get("id_str").String(),
-				Text:      item.Get("modules.module_dynamic.major.bvid").String(),
+				Text:      item.Get("modules.module_dynamic.desc.text").String(),
 				Type:      typ,
 			}
 			dynamicList = append(dynamicList, dynamic)
@@ -128,10 +127,16 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 			}
 			dynamicList = append(dynamicList, dynamic)
 		case ForwardDynamic:
-			//dynamic := Dynamic{
-			//	Type: ForwardDynamic,
-			//	Id:   item.Get("id_str").String(),
-			//}
+			dynamic := Dynamic{
+				Type:      typ,
+				Id:        item.Get("id_str").String(),
+				UId:       item.Get("modules.module_author.mid").Int(),
+				Name:      item.Get("modules.module_author.name").String(),
+				Timestamp: item.Get("modules.module_author.pub_ts").Int(),
+				Text:      item.Get("modules.module_dynamic.desc.text").String(),
+				Extra:     item.Get("orig.modules.module_author.name").String() + `%%` + item.Get("orig.modules.module_dynamic.desc.tex").String(),
+			}
+			dynamicList = append(dynamicList, dynamic)
 		}
 	}
 	return dynamicList, nil
@@ -168,8 +173,10 @@ func GetDynamicListLoop() {
 				}
 			}
 		}
-		baseline = dynamicList[0].Id
-		time.Sleep(time.Minute * 5)
+		if len(baseline) > 0 {
+			baseline = dynamicList[0].Id
+			time.Sleep(time.Minute * 5)
+		}
 	}
 
 }
@@ -184,20 +191,24 @@ func makeNotification(origin *From, dynamic *Dynamic) {
 			return
 		}
 	}
-	if dynamic.Type == VideoDynamic {
+	switch dynamic.Type {
+	case ForwardDynamic:
 		arr := strings.SplitN(dynamic.Extra, `%%`, 2)
-		fmt.Println(arr)
+		text := fmt.Sprintf("@%s 转发了%s动态：\n%s\n原动态内容:\n%s\n", dynamic.Name, arr[0], dynamic.Text, arr[1])
+		notify.Message = text
+	case DrawDynamic:
+		text := fmt.Sprintf("@%s 发布了一条动态：\n%s", dynamic.Name, dynamic.Text)
+		notify.Message = text
+		notify.Picture = dynamic.Picture
+	case VideoDynamic:
+		arr := strings.SplitN(dynamic.Extra, `%%`, 2)
 		text := fmt.Sprintf("@%s 投稿了视频：\n《%s》\n"+
 			"视频链接：https://www.bilibili.com/video/%s\n"+
 			"视频简介：%s\n"+
 			"视频封面：", dynamic.Name, arr[0], dynamic.Text, arr[1])
 		notify.Message = text
 		notify.Picture = dynamic.Picture
-	} else if dynamic.Type == DrawDynamic {
-		text := fmt.Sprintf("@%s 发布了一条动态：\n%s", dynamic.Name, dynamic.Text)
-		notify.Message = text
-		notify.Picture = dynamic.Picture
-	} else if dynamic.Type == TextDynamic {
+	case TextDynamic:
 		text := fmt.Sprintf("@%s 发布了一条动态：\n%s", dynamic.Name, dynamic.Text)
 		notify.Message = text
 	}

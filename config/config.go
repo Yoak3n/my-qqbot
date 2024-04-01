@@ -33,7 +33,7 @@ var (
 	Conf *Configuration
 )
 
-func InitConfig() {
+func init() {
 	k = koanf.New(".")
 	configPath := "config.yaml"
 	err := k.Load(file.Provider(configPath), yaml.Parser())
