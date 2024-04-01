@@ -2,6 +2,7 @@ package bilibili
 
 import (
 	"fmt"
+	"github.com/tidwall/gjson"
 	"io"
 	"my-qqbot/config"
 	"my-qqbot/package/logger"
@@ -9,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/tidwall/gjson"
 )
 
 const (
@@ -142,7 +141,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 			dynamicList = append(dynamicList, dynamic)
 		}
 	}
-	logger.Logger.Println(dynamicList)
+	logger.Logger.Debugln(dynamicList)
 	return dynamicList, nil
 }
 
@@ -179,8 +178,8 @@ func GetDynamicListLoop() {
 		}
 		if len(dynamicList) > 0 {
 			baseline = dynamicList[0].Id
-			time.Sleep(time.Minute * 5)
 		}
+		time.Sleep(time.Minute * 5)
 	}
 
 }
