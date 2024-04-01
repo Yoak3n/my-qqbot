@@ -3,6 +3,8 @@ package bilibili
 import (
 	"fmt"
 	"io"
+	"my-qqbot/config"
+	"my-qqbot/package/logger"
 	"net/http"
 	"strconv"
 	"strings"
@@ -66,7 +68,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 	client := http.DefaultClient
 	req, _ := http.NewRequest("GET", api, nil)
 	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Cookie", CK)
+	req.Header.Set("Cookie", config.Conf.Cookie)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -84,6 +86,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 	for _, item := range items {
 		// 如果是上次已经获取过的动态，则跳过
 		if id := item.Get("id_str").String(); id == baseline {
+			logger.Logger.Debugln("Skipping dynamic:", id)
 			break
 		}
 		typ := item.Get("type").String()
@@ -139,6 +142,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 			dynamicList = append(dynamicList, dynamic)
 		}
 	}
+	logger.Logger.Println(dynamicList)
 	return dynamicList, nil
 }
 
@@ -151,10 +155,10 @@ func GetDynamicListLoop() {
 	for {
 		dynamicList, err := getDynamicList(baseline)
 		if err != nil {
-			fmt.Println(err)
+			logger.Logger.Errorln(err)
 			err = RefreshCookie()
 			if err != nil {
-				return
+				logger.Logger.Errorln(err)
 			}
 			continue
 		}
@@ -173,7 +177,7 @@ func GetDynamicListLoop() {
 				}
 			}
 		}
-		if len(baseline) > 0 {
+		if len(dynamicList) > 0 {
 			baseline = dynamicList[0].Id
 			time.Sleep(time.Minute * 5)
 		}

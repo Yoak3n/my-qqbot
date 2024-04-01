@@ -45,7 +45,6 @@ func init() {
 		RefreshToken: "",
 	}
 	loadToConfiguration()
-	fmt.Println("config loaded:", Conf)
 }
 func loadToConfiguration() {
 	Conf.Self = k.Int64("self")

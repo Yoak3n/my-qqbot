@@ -87,4 +87,5 @@ func init() {
 	Logger.AddHook(hook)
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(&Formatter{})
+	Logger.SetLevel(logrus.DebugLevel)
 }
