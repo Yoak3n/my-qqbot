@@ -136,7 +136,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 				Name:      item.Get("modules.module_author.name").String(),
 				Timestamp: item.Get("modules.module_author.pub_ts").Int(),
 				Text:      item.Get("modules.module_dynamic.desc.text").String(),
-				Extra:     item.Get("orig.modules.module_author.name").String() + `%%` + item.Get("orig.modules.module_dynamic.desc.tex").String(),
+				Extra:     item.Get("orig.modules.module_author.name").String() + `%%` + item.Get("orig.modules.module_dynamic.desc.text").String(),
 			}
 			dynamicList = append(dynamicList, dynamic)
 		}
