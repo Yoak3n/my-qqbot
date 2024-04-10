@@ -184,6 +184,7 @@ func GetDynamicListLoop() {
 			}
 			continue
 		}
+		dynamicHub.lock.RLock()
 		for origin, target := range dynamicHub.Listener {
 			for _, dynamic := range dynamicList {
 				for _, t := range target {
@@ -199,6 +200,7 @@ func GetDynamicListLoop() {
 				}
 			}
 		}
+		dynamicHub.lock.RUnlock()
 		if len(dynamicList) > 0 {
 			baseline = dynamicList[0].Id
 		}
