@@ -17,7 +17,7 @@ func Register() {
 	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
 	zero.OnRegex(`^/订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
 	zero.OnRegex(`^/订阅动态.*?(\S+)(.*?(\S+))*`).Handle(pluginMap["订阅动态"])
-
+	zero.OnRegex(`^/取消订阅.*?(\S+)(.*?(\S+))*`).Handle(pluginMap["取消订阅"])
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
 	})
 
@@ -140,7 +140,7 @@ func listenDynamic(ctx *zero.Ctx) {
 			Private: true,
 		}
 	}
-	bilibili.AddDynamic(*from, handleTargets...)
+	bilibili.AddDynamic(*from, handleTargets[0])
 	if len(handleTargets) == 1 {
 		ctx.Send("订阅" + handleTargets[0] + "动态成功！")
 	} else {
@@ -174,4 +174,44 @@ func aiChat(ctx *zero.Ctx) {
 		r = chat.Ask(ctx.Event.UserID, ctx.Event.Message.String())
 	}
 	ctx.SendChain(message.Text(r.Answer))
+}
+
+func cancelListenDynamic(ctx *zero.Ctx) {
+	targets := ctx.State["regex_matched"].([]string)[1:]
+	handleTargets := make([]string, 0)
+	for _, i := range targets {
+		s := strings.TrimSpace(i)
+		exist := false
+		for _, j := range handleTargets {
+			if s == j {
+				exist = true
+				break
+			}
+		}
+		if !exist && s != "" {
+			handleTargets = append(handleTargets, s)
+		}
+	}
+	if config.Conf.Cookie == "" {
+		ctx.Send("请先【/登录哔哩哔哩】获取cookie")
+		return
+	}
+	from := &bilibili.From{}
+	if ctx.Event.MessageType == "group" {
+		from = &bilibili.From{
+			Id:      ctx.Event.GroupID,
+			Private: false,
+		}
+	} else {
+		from = &bilibili.From{
+			Id:      ctx.Event.UserID,
+			Private: true,
+		}
+	}
+	err := bilibili.CancelDynamic(*from, handleTargets[0])
+	if err != nil {
+		ctx.Send(err.Error())
+	}
+	ctx.Send("取消订阅" + handleTargets[0] + "的动态成功！")
+
 }

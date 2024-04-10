@@ -17,6 +17,7 @@ func init() {
 	pluginMap["订阅动态"] = listenDynamic
 	pluginMap["ai对话"] = aiChat
 	pluginMap["重置对话"] = resetConversation
+	pluginMap["取消订阅"] = cancelListenDynamic
 
 }
 

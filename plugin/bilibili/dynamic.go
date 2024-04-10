@@ -1,6 +1,7 @@
 package bilibili
 
 import (
+	"errors"
 	"fmt"
 	"github.com/tidwall/gjson"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -36,6 +38,7 @@ type (
 		Listener  map[From][]string
 		Listening bool
 		done      []string
+		lock      sync.RWMutex
 	}
 )
 
@@ -44,19 +47,39 @@ func init() {
 		Listener:  make(map[From][]string),
 		Listening: false,
 		done:      make([]string, 0),
+		lock:      sync.RWMutex{},
 	}
 }
 
-func AddDynamic(origin From, target ...string) {
+func AddDynamic(origin From, target string) {
 	if dynamicHub == nil {
 		dynamicHub = &DynamicListener{
 			Listener: make(map[From][]string),
 		}
 	}
-	dynamicHub.Listener[origin] = append(dynamicHub.Listener[origin], target...)
+	dynamicHub.Listener[origin] = append(dynamicHub.Listener[origin], target)
 	go GetDynamicListLoop()
 }
 
+func CancelDynamic(origin From, target string) error {
+	if dynamicHub == nil {
+		return errors.New("dynamic hub is nil")
+	}
+
+	flag := false
+	dynamicHub.lock.Lock()
+	defer dynamicHub.lock.Unlock()
+	for k, v := range dynamicHub.Listener[origin] {
+		if v == target {
+			dynamicHub.Listener[origin] = append(dynamicHub.Listener[origin][:k], dynamicHub.Listener[origin][k+1:]...)
+			flag = true
+		}
+	}
+	if !flag {
+		return errors.New("can't find dynamic hub listener")
+	}
+	return nil
+}
 func getDynamicList(baseline string) ([]Dynamic, error) {
 	api := "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all?type=all"
 	if baseline != "" {
