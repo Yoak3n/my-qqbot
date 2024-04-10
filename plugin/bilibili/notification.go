@@ -136,7 +136,7 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 					Picture: []string{info.Cover},
 				}
 				Notify <- notify
-				fmt.Printf("直播开始：%s\n", live.Cmd)
+				logger.Logger.Printf("直播开始：%d", live.Roomid)
 			})
 			err := c.Client.Start()
 			if err != nil {
@@ -177,7 +177,7 @@ func getRoomInfo(id int) (*model.Room, error) {
 }
 
 func getUserInfo(uid int64) *model.User {
-	// local database to avoid anti-crawler
+	// use local database to avoid anti-crawler
 	count := 0
 	for {
 		res, err := request.Get("https://api.bilibili.com/x/web-interface/card", fmt.Sprintf("mid=%d", uid))

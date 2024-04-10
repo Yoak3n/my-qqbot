@@ -23,7 +23,7 @@ func init() {
 
 func help(ctx *zero.Ctx) {
 	msgArr := make([]string, 0)
-	for k, _ := range pluginMap {
+	for k := range pluginMap {
 		msgArr = append(msgArr, k)
 	}
 

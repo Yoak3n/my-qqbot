@@ -2,55 +2,76 @@ package command
 
 import (
 	"fmt"
-	zero "github.com/wdvxdr1123/ZeroBot"
-	"github.com/wdvxdr1123/ZeroBot/message"
 	"my-qqbot/config"
 	"my-qqbot/plugin/bilibili"
 	"my-qqbot/plugin/chat"
 	"os"
 	"strconv"
 	"strings"
+
+	zero "github.com/wdvxdr1123/ZeroBot"
+	"github.com/wdvxdr1123/ZeroBot/message"
 )
 
 func Register() {
 	zero.OnCommand("登录哔哩哔哩").Handle(pluginMap["登录哔哩哔哩"])
 	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
-	zero.OnRegex(`^/订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
-	zero.OnRegex(`^/订阅动态.*?(\S+)(.*?(\S+))*`).Handle(pluginMap["订阅动态"])
-	zero.OnRegex(`^/取消订阅.*?(\S+)(.*?(\S+))*`).Handle(pluginMap["取消订阅"])
+	zero.OnRegex(`^/订阅直播间.*?(\d+)`).Handle(pluginMap["订阅直播间"])
+	zero.OnRegex(`^/订阅动态.*?(\S+)`).Handle(pluginMap["订阅动态"])
+	zero.OnRegex(`^/取消订阅.*?(\S+)`).Handle(pluginMap["取消订阅"])
+	zero.OnCommandGroup([]string{"help", "帮助"}).Handle(pluginMap["帮助"])
+	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(pluginMap["重置对话"])
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
 	})
-
-	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(pluginMap["重置对话"])
-	zero.OnCommandGroup([]string{"help", "帮助"}).Handle(pluginMap["帮助"])
 	zero.OnMessage().Handle(pluginMap["ai对话"])
 	go SendMessage(config.Conf.Self)
 }
 
 func SendMessage(self ...int64) {
-	for {
-		select {
-		case notify := <-bilibili.Notify:
-			for _, item := range self {
-				bot := zero.GetBot(item)
-				var chain []message.MessageSegment
-				if len(notify.Picture) == 0 {
-					chain = append(chain, message.Text(notify.Message))
-				} else {
-					chain = append(chain, message.Text(notify.Message))
-					for _, picture := range notify.Picture {
-						chain = append(chain, message.Image(picture))
-					}
+	for notify := range bilibili.Notify {
+		for _, item := range self {
+			bot := zero.GetBot(item)
+			var chain []message.MessageSegment
+			if len(notify.Picture) == 0 {
+				chain = append(chain, message.Text(notify.Message))
+			} else {
+				chain = append(chain, message.Text(notify.Message))
+				for _, picture := range notify.Picture {
+					chain = append(chain, message.Image(picture))
 				}
-				m := (message.Message)(chain)
-				if notify.Private {
-					bot.SendPrivateMessage(notify.Target, m)
-				} else {
-					bot.SendGroupMessage(notify.Target, m)
-				}
+			}
+			m := (message.Message)(chain)
+			if notify.Private {
+				bot.SendPrivateMessage(notify.Target, m)
+			} else {
+				bot.SendGroupMessage(notify.Target, m)
 			}
 		}
 	}
+	// for {
+	// 	select {
+	// 	case notify := <-bilibili.Notify:
+	// 		logger.Logger.Debugln("收到消息：" + notify.Message)
+	// 		for _, item := range self {
+	// 			bot := zero.GetBot(item)
+	// 			var chain []message.MessageSegment
+	// 			if len(notify.Picture) == 0 {
+	// 				chain = append(chain, message.Text(notify.Message))
+	// 			} else {
+	// 				chain = append(chain, message.Text(notify.Message))
+	// 				for _, picture := range notify.Picture {
+	// 					chain = append(chain, message.Image(picture))
+	// 				}
+	// 			}
+	// 			m := (message.Message)(chain)
+	// 			if notify.Private {
+	// 				bot.SendPrivateMessage(notify.Target, m)
+	// 			} else {
+	// 				bot.SendGroupMessage(notify.Target, m)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 }
 

@@ -1,6 +1,8 @@
 package util
 
-import "os"
+import (
+	"os"
+)
 
 func CreateDirNotExists(dir string) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
