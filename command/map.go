@@ -18,7 +18,6 @@ func init() {
 	pluginMap["ai对话"] = aiChat
 	pluginMap["重置对话"] = resetConversation
 	pluginMap["取消订阅"] = cancelListenDynamic
-
 }
 
 func help(ctx *zero.Ctx) {
@@ -36,5 +35,5 @@ func help(ctx *zero.Ctx) {
 		}
 		msgLines = append(msgLines, msg)
 	}
-	ctx.SendChain(message.Text("帮助信息：\n" + strings.Join(msgLines, "")))
+	ctx.SendChain(message.Text("命令列表：\n" + strings.Join(msgLines, "")))
 }
