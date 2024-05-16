@@ -145,7 +145,7 @@ func listenDynamic(ctx *zero.Ctx) {
 			handleTargets = append(handleTargets, s)
 		}
 	}
-	if config.Conf.Cookie == "" {
+	if config.Conf.Bilibili.Cookie == "" {
 		ctx.Send("请先【/登录哔哩哔哩】获取cookie")
 		return
 	}
@@ -213,7 +213,7 @@ func cancelListenDynamic(ctx *zero.Ctx) {
 			handleTargets = append(handleTargets, s)
 		}
 	}
-	if config.Conf.Cookie == "" {
+	if config.Conf.Bilibili.Cookie == "" {
 		ctx.Send("请先【/登录哔哩哔哩】获取cookie")
 		return
 	}

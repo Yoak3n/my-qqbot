@@ -1,0 +1,11 @@
+bilibili:
+    cookie: xxxxx
+    refresh_token: xxxxxxxx
+qwen:
+    address: http://xxxxxxxxxxx
+self: xxxx
+nickname: 
+    - "bot"
+ws:
+    address: ws://10.25.25.222:3001
+    token: xxxxxx

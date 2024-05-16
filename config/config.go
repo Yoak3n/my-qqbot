@@ -11,12 +11,15 @@ import (
 
 type (
 	Configuration struct {
-		Self   int64
-		Cookie string
-
+		Self     int64
+		NickName []string
+		Bilibili Bilibili
+		WsDriver WsDriver
+		QWen     QWen
+	}
+	Bilibili struct {
+		Cookie       string
 		RefreshToken string
-		WsDriver     WsDriver
-		QWen         QWen
 	}
 	WsDriver struct {
 		Address string
@@ -41,16 +44,16 @@ func init() {
 		panic(err)
 	}
 	Conf = &Configuration{
-		Cookie:       "",
-		RefreshToken: "",
+		Bilibili: Bilibili{},
+		NickName: make([]string, 3),
 	}
 	loadToConfiguration()
 }
 func loadToConfiguration() {
 	Conf.Self = k.Int64("self")
-
-	Conf.Cookie = k.String("bilibili.cookie")
-	Conf.RefreshToken = k.String("bilibili.refresh_token")
+	Conf.NickName = k.Strings("nickname")
+	Conf.Bilibili.Cookie = k.String("bilibili.cookie")
+	Conf.Bilibili.RefreshToken = k.String("bilibili.refresh_token")
 
 	Conf.WsDriver.Address = k.String("ws.address")
 	Conf.WsDriver.Token = k.String("ws.token")
@@ -58,7 +61,7 @@ func loadToConfiguration() {
 	Conf.QWen.Address = strings.TrimRight(k.String("qwen.address"), "/")
 }
 func UpdateBilibiliCookie(cookie string, refreshToken string) {
-	Conf.Cookie = cookie
+	Conf.Bilibili.Cookie = cookie
 	err := k.Set("bilibili.cookie", cookie)
 	err = k.Set("bilibili.refresh_token", refreshToken)
 	if err != nil {

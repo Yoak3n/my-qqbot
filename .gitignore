@@ -1,5 +1,4 @@
 *.exe
 *.json
-*.yaml
-main.go
+config.yaml
 my-qqbot

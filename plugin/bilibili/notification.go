@@ -94,7 +94,7 @@ func genListener(id int) (*Client, error) {
 		return nil, errors.New("room id is empty")
 	}
 	c := client.NewClient(id)
-	cookie := config.Conf.Cookie
+	cookie := config.Conf.Bilibili.Cookie
 	if cookie == "" {
 		return nil, errors.New("请先【/登录哔哩哔哩】获取cookie")
 	}

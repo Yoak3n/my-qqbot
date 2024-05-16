@@ -57,7 +57,7 @@ func checkCookieNeedRefresh() (bool, int64, error) {
 	req, _ := http.NewRequest("GET", uri, nil)
 	req.Header.Set("User-Agent", userAgent)
 	if CK == "" {
-		CK = config.Conf.Cookie
+		CK = config.Conf.Bilibili.Cookie
 	}
 	req.Header.Set("Cookie", CK)
 	res, err := client.Do(req)
@@ -311,7 +311,7 @@ func login() (string, string) {
 func getCsrf() string {
 	reg := re.MustCompile(`bili_jct=([0-9a-zA-Z]+);`)
 	if CK == "" {
-		CK = config.Conf.Cookie
+		CK = config.Conf.Bilibili.Cookie
 	}
 	csrf := reg.FindStringSubmatch(CK)[1]
 	return csrf

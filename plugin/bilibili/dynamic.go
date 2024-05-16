@@ -90,7 +90,7 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 	client := http.DefaultClient
 	req, _ := http.NewRequest("GET", api, nil)
 	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Cookie", config.Conf.Cookie)
+	req.Header.Set("Cookie", config.Conf.Bilibili.Cookie)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
