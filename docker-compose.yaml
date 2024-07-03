@@ -1,0 +1,25 @@
+version: '3'
+services:
+  napcat:
+    environment:
+        - ACCOUNT=123456789
+        - WS_ENABLE=true
+    ports:
+        - 3001:3001
+        - 6099:6099
+    container_name: napcat
+    networks: 
+      - qqbot
+    restart: always
+    image: mlikiowa/napcat-docker:latest
+  driver:
+    image: yoaken/my-qqbot:latest
+    container_name: my-qqbot
+    restart: always
+    networks: 
+      - qqbot
+    volumes:
+      - ./config.yaml:/app/config.yaml
+networks:
+  qqbot:
+    driver: bridge

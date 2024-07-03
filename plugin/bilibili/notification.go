@@ -1,16 +1,17 @@
 package bilibili
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Akegarasu/blivedm-go/client"
-	"github.com/Akegarasu/blivedm-go/message"
-	"github.com/tidwall/gjson"
 	"my-qqbot/config"
 	"my-qqbot/model"
 	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
 	"time"
+
+	"github.com/Akegarasu/blivedm-go/client"
+	"github.com/tidwall/gjson"
 )
 
 type (
@@ -34,6 +35,10 @@ type (
 	From struct {
 		Private bool
 		Id      int64
+	}
+	RoomUpdateMessage struct {
+		RoomId int   `json:"room_id"`
+		Fans   int64 `json:"fans"`
 	}
 )
 
@@ -117,26 +122,31 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 	for _, c := range l.Listeners {
 		if !c.Listening {
 			c.Listening = true
-			c.Client.OnLive(func(live *message.Live) {
-				// 处理直播开始事件
-				info, err := getRoomInfo(live.Roomid)
-				if info == nil || err != nil {
-					logger.Logger.Errorln("获取直播间信息失败:", err)
-					return
+			c.Client.RegisterCustomEventHandler("ROOM_REAL_TIME_MESSAGE_UPDATE", func(s string) {
+				// 处理自定义事件
+				msg := &RoomUpdateMessage{}
+				err := json.Unmarshal([]byte(s), msg)
+				if err != nil {
+					logger.Logger.Errorln("解析直播间更新消息失败：", err)
 				}
-				if c.Room == nil {
-					logger.Logger.Errorln("直播间信息为空")
+				if msg.RoomId == c.RoomID {
+					info, err := getRoomInfo(msg.RoomId)
+					if info == nil || err != nil {
+						logger.Logger.Errorln("获取直播间信息失败:", err)
+						return
+					}
+					c.Room = info
+					msg := fmt.Sprintf("【%s】开始直播了！\n标题：%s\n观看链接：https://live.bilibili.com/%d", info.Name, info.Title, info.ShortId)
+					notify := &Notification{
+						Private: c.From.Private,
+						Target:  c.From.Id,
+						Message: msg,
+						Picture: []string{info.Cover},
+					}
+					Notify <- notify
+					logger.Logger.Printf("直播开始：%d", c.RoomID)
 				}
-				c.Room = info
-				msg := fmt.Sprintf("【%s】开始直播了！\n标题：%s\n观看链接：https://live.bilibili.com/%d", info.Name, info.Title, info.ShortId)
-				notify := &Notification{
-					Private: c.From.Private,
-					Target:  c.From.Id,
-					Message: msg,
-					Picture: []string{info.Cover},
-				}
-				Notify <- notify
-				logger.Logger.Printf("直播开始：%d", live.Roomid)
+				// 处理粉丝数变化事件
 			})
 			err := c.Client.Start()
 			if err != nil {
