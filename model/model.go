@@ -24,3 +24,12 @@ type Medal struct {
 	Level    int    `json:"level,omitempty"`
 	TargetID int64  `json:"target_id"`
 }
+
+type Video struct {
+	Title       string `json:"title"`
+	AID         int64  `json:"aid"`
+	BVID        string `json:"bvid"`
+	Description string `json:"description"`
+	Author      string `json:"author"`
+	Cover       string `json:"cover"`
+}

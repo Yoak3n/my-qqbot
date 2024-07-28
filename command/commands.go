@@ -23,8 +23,13 @@ func Register() {
 	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(pluginMap["重置对话"])
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
 	})
+	zero.OnCommand("每日新闻").Handle(pluginMap["每日新闻"])
 	zero.OnMessage().Handle(pluginMap["ai对话"])
 	go SendMessage(config.Conf.Self)
+
+}
+func TimerEvents() {
+
 }
 
 func SendMessage(self ...int64) {
@@ -48,30 +53,23 @@ func SendMessage(self ...int64) {
 			}
 		}
 	}
-	// for {
-	// 	select {
-	// 	case notify := <-bilibili.Notify:
-	// 		logger.Logger.Debugln("收到消息：" + notify.Message)
-	// 		for _, item := range self {
-	// 			bot := zero.GetBot(item)
-	// 			var chain []message.MessageSegment
-	// 			if len(notify.Picture) == 0 {
-	// 				chain = append(chain, message.Text(notify.Message))
-	// 			} else {
-	// 				chain = append(chain, message.Text(notify.Message))
-	// 				for _, picture := range notify.Picture {
-	// 					chain = append(chain, message.Image(picture))
-	// 				}
-	// 			}
-	// 			m := (message.Message)(chain)
-	// 			if notify.Private {
-	// 				bot.SendPrivateMessage(notify.Target, m)
-	// 			} else {
-	// 				bot.SendGroupMessage(notify.Target, m)
-	// 			}
-	// 		}
-	// 	}
-	// }
+}
+
+func subDailyNews(ctx *zero.Ctx) {
+	from := &bilibili.From{}
+	if ctx.Event.MessageType == "group" {
+		from = &bilibili.From{
+			Id:      ctx.Event.GroupID,
+			Private: false,
+		}
+	} else {
+		from = &bilibili.From{
+			Id:      ctx.Event.UserID,
+			Private: true,
+		}
+	}
+	addNewsSub(from)
+	// TODO: GLOBAL NOTIFY
 
 }
 

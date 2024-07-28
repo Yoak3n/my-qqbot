@@ -18,6 +18,7 @@ func init() {
 	pluginMap["ai对话"] = aiChat
 	pluginMap["重置对话"] = resetConversation
 	pluginMap["取消订阅"] = cancelListenDynamic
+	pluginMap["每日新闻"] = subDailyNews
 }
 
 func help(ctx *zero.Ctx) {
