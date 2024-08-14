@@ -59,7 +59,7 @@ func dailyHotNews(from *bilibili.From) {
 	bilibili.Notify <- notification
 
 	message := fmt.Sprintf("今日热词: %s\n"+
-		"推荐视频:%s\n"+
+		"推荐视频：%s\n"+
 		"https://bilibili.com/video/%s\n"+
 		"视频简介:%s", hottestWord, hottestVideo.Title, hottestVideo.BVID, hottestVideo.Description)
 	pics := make([]string, 0)

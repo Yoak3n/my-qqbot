@@ -3,27 +3,31 @@ package bilibili
 import (
 	"github.com/tidwall/gjson"
 	"my-qqbot/model"
+	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
 )
 
 const VideoSearch = "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword="
 
 func SearchVideoFromKeyword(keyword string) *model.Video {
+	logger.Logger.Println("Searching video from keyword: " + keyword)
 	res, err := request.Get(VideoSearch + keyword)
 	if err != nil {
+		logger.Logger.Println(err)
+		logger.Logger.Println("Failed to search video from keyword: " + keyword)
 		return nil
 	}
 	result := gjson.ParseBytes(res)
 	firstVideo := result.Get("data.result.0")
-
+	logger.Logger.Println(firstVideo)
 	video := &model.Video{
 		AID:         firstVideo.Get("aid").Int(),
 		BVID:        firstVideo.Get("bvid").String(),
 		Title:       firstVideo.Get("title").String(),
 		Description: firstVideo.Get("description").String(),
 		Author:      firstVideo.Get("author").String(),
-		Cover:       "https:" + firstVideo.Get("pic").String(),
+		Cover:       "http:" + firstVideo.Get("pic").String(),
 	}
-
+	logger.Logger.Println(video.Cover)
 	return video
 }
