@@ -42,20 +42,14 @@ func dailyHotNews(from *bilibili.From) {
 	buf, _ := io.ReadAll(res.Body)
 	result := gjson.ParseBytes(buf)
 	list := result.Get("list").Array()
-	words := make(map[int]string, len(list))
 	hottestWord := list[0].Get("keyword").String()
-	for index, word := range list {
-		keyword := word.Get("show_name").String()
-		words[index+1] = keyword
-	}
 	hottestVideo := bilibili.SearchVideoFromKeyword(hottestWord)
 	// 今日热搜前十
 	now := time.Now().Format("1月2日")
 	content := now + "热搜:\n"
-	for index, word := range words {
-		content += fmt.Sprintf("%d. %s\n", index, word)
+	for index, word := range list {
+		content += fmt.Sprintf("%d. %s\n", index+1, word.Get("show_name").String())
 	}
-	content += fmt.Sprintf("%s", content)
 	content, _ = strings.CutSuffix(content, "\n")
 	notification := &bilibili.Notification{
 		Private: from.Private,
@@ -70,19 +64,20 @@ func dailyHotNews(from *bilibili.From) {
 		"视频简介:%s", hottestWord, hottestVideo.Title, hottestVideo.BVID, hottestVideo.Description)
 	pics := make([]string, 0)
 	pics = append(pics, hottestVideo.Cover)
-	notification = &bilibili.Notification{
+	notify := &bilibili.Notification{
 		Private: from.Private,
 		Target:  from.Id,
 		Message: message,
-		Picture: make([]string, 0),
+		Picture: pics,
 	}
-	bilibili.Notify <- notification
+	bilibili.Notify <- notify
 }
 
 func addNewsSub(from *bilibili.From) {
 	now := time.Now()
 	lunch := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, now.Location())
 	d := lunch.Sub(now)
+	go dailyHotNews(from)
 	if d < 0 {
 		d += 24 * time.Hour
 	}
@@ -106,10 +101,14 @@ func runEventCircle() {
 		for _, event := range hub.Pool {
 			if event.Timer != nil && !event.running {
 				go func() {
+					if event.running {
+						return
+					}
 					event.running = true
 					<-event.Timer.C
 					event.Action(event.From)
 					event.Timer.Reset(24 * time.Hour)
+					event.running = false
 				}()
 			}
 		}

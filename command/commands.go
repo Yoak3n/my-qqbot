@@ -69,6 +69,7 @@ func subDailyNews(ctx *zero.Ctx) {
 		}
 	}
 	addNewsSub(from)
+	ctx.Send("订阅每日新闻成功！")
 	// TODO: GLOBAL NOTIFY
 
 }
