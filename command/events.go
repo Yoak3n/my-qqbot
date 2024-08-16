@@ -32,6 +32,7 @@ var (
 	hub *EventHub
 )
 
+// 每天12点更新，但计算时间间隔的时区问题仍有待测试
 func dailyHotNews(from *bilibili.From) {
 	res, err := http.Get(HotWord)
 	if err != nil || res.StatusCode != 200 {
@@ -74,8 +75,9 @@ func dailyHotNews(from *bilibili.From) {
 }
 
 func addNewsSub(from *bilibili.From) {
-	now := time.Now()
-	lunch := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, now.Location())
+	now := time.Now().UTC()
+	// 每天12点更新，但计算时间间隔的时区问题仍有待测试
+	lunch := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, time.UTC)
 	d := lunch.Sub(now)
 	go dailyHotNews(from)
 	if d < 0 {
