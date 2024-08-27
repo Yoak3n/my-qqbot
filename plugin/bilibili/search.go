@@ -14,7 +14,7 @@ func SearchVideoFromKeyword(keyword string) *model.Video {
 	logger.Logger.Println("Searching video from keyword: " + keyword)
 
 	res, err := request.Get(VideoSearch, "search_type=video", "keyword="+keyword)
-	logger.Logger.Println(res)
+	logger.Logger.Println(string(res))
 	if err != nil {
 		logger.Logger.Println(err)
 		return nil

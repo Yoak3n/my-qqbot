@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"my-qqbot/config"
+	"my-qqbot/package/logger"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -12,15 +13,15 @@ import (
 )
 
 func Get(urlStr string, args ...string) ([]byte, error) {
-	params := "?"
+	params := ""
 	if l := len(args); l > 0 {
-		params += strings.Join(args, "&")
+		params = "?" + url.PathEscape(strings.Join(args, "&"))
 	} else {
 		params = ""
 	}
 	client := &http.Client{}
-
-	req, err := http.NewRequest(http.MethodGet, urlStr+url.PathEscape(params), nil)
+	logger.Logger.Info("请求地址: " + params)
+	req, err := http.NewRequest(http.MethodGet, params, nil)
 	if err != nil {
 		return nil, err
 	}
