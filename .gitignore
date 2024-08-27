@@ -2,5 +2,6 @@
 *.json
 config.yaml
 my-qqbot
+main.go
 .idea/
 data/

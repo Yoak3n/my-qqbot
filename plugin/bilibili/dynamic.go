@@ -6,7 +6,9 @@ import (
 	"github.com/tidwall/gjson"
 	"io"
 	"my-qqbot/config"
+	"my-qqbot/model"
 	"my-qqbot/package/logger"
+	"my-qqbot/queue"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,7 +37,7 @@ type (
 		Extra     string
 	}
 	DynamicListener struct {
-		Listener  map[From][]string
+		Listener  map[model.From][]string
 		Listening bool
 		done      []string
 		lock      sync.RWMutex
@@ -44,24 +46,24 @@ type (
 
 func init() {
 	dynamicHub = &DynamicListener{
-		Listener:  make(map[From][]string),
+		Listener:  make(map[model.From][]string),
 		Listening: false,
 		done:      make([]string, 0),
 		lock:      sync.RWMutex{},
 	}
 }
 
-func AddDynamic(origin From, target string) {
+func AddDynamic(origin model.From, target string) {
 	if dynamicHub == nil {
 		dynamicHub = &DynamicListener{
-			Listener: make(map[From][]string),
+			Listener: make(map[model.From][]string),
 		}
 	}
 	dynamicHub.Listener[origin] = append(dynamicHub.Listener[origin], target)
 	go GetDynamicListLoop()
 }
 
-func CancelDynamic(origin From, target string) error {
+func CancelDynamic(origin model.From, target string) error {
 	if dynamicHub == nil {
 		return errors.New("dynamic hub is nil")
 	}
@@ -209,8 +211,8 @@ func GetDynamicListLoop() {
 
 }
 
-func makeNotification(origin *From, dynamic *Dynamic) {
-	notify := &Notification{
+func makeNotification(origin *model.From, dynamic *Dynamic) {
+	notify := &model.Notification{
 		Private: origin.Private,
 		Target:  origin.Id,
 	}
@@ -241,6 +243,6 @@ func makeNotification(origin *From, dynamic *Dynamic) {
 		notify.Message = text
 	}
 	dynamicHub.done = append(dynamicHub.done, dynamic.Id)
-	Notify <- notify
+	queue.Notify <- notify
 
 }

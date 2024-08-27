@@ -3,7 +3,6 @@ package main
 import (
 	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/driver"
-	"my-qqbot/command"
 	"my-qqbot/config"
 )
 
@@ -13,7 +12,10 @@ func init() {
 
 func main() {
 	// 注册插件
-	command.Register()
+	zero.OnCommand("hello").
+		Handle(func(ctx *zero.Ctx) {
+			ctx.Send("world")
+		})
 	zero.RunAndBlock(&zero.Config{
 		NickName:      []string{"bot"},
 		CommandPrefix: "/",

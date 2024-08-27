@@ -7,6 +7,7 @@ RUN go build -o main
 
 FROM scratch as runtime
 LABEL authors="Yoake"
+ENV TZ="Asia/Shanghai"
 WORKDIR /app
 COPY --from=builder /app/my-qqbot/config.example.yaml config.yaml
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs/

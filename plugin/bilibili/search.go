@@ -12,10 +12,11 @@ const VideoSearch = "https://api.bilibili.com/x/web-interface/wbi/search/type?se
 
 func SearchVideoFromKeyword(keyword string) *model.Video {
 	logger.Logger.Println("Searching video from keyword: " + keyword)
+
 	res, err := request.Get(VideoSearch + keyword)
+	logger.Logger.Println(res)
 	if err != nil {
 		logger.Logger.Println(err)
-		logger.Logger.Println("Failed to search video from keyword: " + keyword)
 		return nil
 	}
 	result := gjson.ParseBytes(res)
@@ -32,6 +33,5 @@ func SearchVideoFromKeyword(keyword string) *model.Video {
 		Author:      firstVideo.Get("author").String(),
 		Cover:       "http:" + firstVideo.Get("pic").String(),
 	}
-	logger.Logger.Println(video.Cover)
 	return video
 }

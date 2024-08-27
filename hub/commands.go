@@ -1,10 +1,12 @@
-package command
+package hub
 
 import (
 	"fmt"
 	"my-qqbot/config"
+	"my-qqbot/model"
 	"my-qqbot/plugin/bilibili"
 	"my-qqbot/plugin/chat"
+	"my-qqbot/queue"
 	"os"
 	"strconv"
 	"strings"
@@ -24,6 +26,7 @@ func Register() {
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
 	})
 	zero.OnCommand("每日新闻").Handle(pluginMap["每日新闻"])
+	zero.OnCommand("取消每日新闻").Handle(pluginMap["取消每日新闻"])
 	zero.OnMessage().Handle(pluginMap["ai对话"])
 	go SendMessage(config.Conf.Self)
 
@@ -33,7 +36,7 @@ func TimerEvents() {
 }
 
 func SendMessage(self ...int64) {
-	for notify := range bilibili.Notify {
+	for notify := range queue.Notify {
 		for _, item := range self {
 			bot := zero.GetBot(item)
 			var chain []message.MessageSegment
@@ -56,14 +59,14 @@ func SendMessage(self ...int64) {
 }
 
 func subDailyNews(ctx *zero.Ctx) {
-	from := &bilibili.From{}
+	from := &model.From{}
 	if ctx.Event.MessageType == "group" {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.GroupID,
 			Private: false,
 		}
 	} else {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.UserID,
 			Private: true,
 		}
@@ -71,7 +74,23 @@ func subDailyNews(ctx *zero.Ctx) {
 	addNewsSub(from)
 	ctx.Send("订阅每日新闻成功！")
 	// TODO: GLOBAL NOTIFY
+}
 
+func cancelDailyNews(ctx *zero.Ctx) {
+	from := &model.From{}
+	if ctx.Event.MessageType == "group" {
+		from = &model.From{
+			Id:      ctx.Event.GroupID,
+			Private: false,
+		}
+	} else {
+		from = &model.From{
+			Id:      ctx.Event.UserID,
+			Private: true,
+		}
+	}
+	cancelNewsSub(from)
+	ctx.Send("取消订阅每日新闻成功！")
 }
 
 func loginBili(ctx *zero.Ctx) {
@@ -104,14 +123,14 @@ func listenBili(ctx *zero.Ctx) {
 		}
 		roomsID = append(roomsID, id)
 	}
-	from := &bilibili.From{}
+	from := &model.From{}
 	if ctx.Event.MessageType == "group" {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.GroupID,
 			Private: false,
 		}
 	} else {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.UserID,
 			Private: true,
 		}
@@ -148,14 +167,14 @@ func listenDynamic(ctx *zero.Ctx) {
 		ctx.Send("请先【/登录哔哩哔哩】获取cookie")
 		return
 	}
-	from := &bilibili.From{}
+	from := &model.From{}
 	if ctx.Event.MessageType == "group" {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.GroupID,
 			Private: false,
 		}
 	} else {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.UserID,
 			Private: true,
 		}
@@ -216,14 +235,14 @@ func cancelListenDynamic(ctx *zero.Ctx) {
 		ctx.Send("请先【/登录哔哩哔哩】获取cookie")
 		return
 	}
-	from := &bilibili.From{}
+	from := &model.From{}
 	if ctx.Event.MessageType == "group" {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.GroupID,
 			Private: false,
 		}
 	} else {
-		from = &bilibili.From{
+		from = &model.From{
 			Id:      ctx.Event.UserID,
 			Private: true,
 		}

@@ -1,13 +1,14 @@
 package bilibili
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Akegarasu/blivedm-go/message"
 	"my-qqbot/config"
 	"my-qqbot/model"
 	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
+	"my-qqbot/queue"
 	"time"
 
 	"github.com/Akegarasu/blivedm-go/client"
@@ -24,18 +25,9 @@ type (
 		Client    *client.Client
 		Room      *model.Room
 		Listening bool
-		From      *From
+		From      *model.From
 	}
-	Notification struct {
-		Private bool
-		Message string
-		Target  int64
-		Picture []string
-	}
-	From struct {
-		Private bool
-		Id      int64
-	}
+
 	RoomUpdateMessage struct {
 		RoomId int   `json:"room_id"`
 		Fans   int64 `json:"fans"`
@@ -43,15 +35,10 @@ type (
 )
 
 var (
-	hub    *LiveRoomPlugin
-	Notify chan *Notification
+	hub *LiveRoomPlugin
 )
 
-func init() {
-	Notify = make(chan *Notification, 100)
-}
-
-func AddSub(origin *From, targets ...int) error {
+func AddSub(origin *model.From, targets ...int) error {
 	if hub == nil {
 		var err error
 		hub, err = newLiveRoomPlugin(origin, targets...)
@@ -73,7 +60,7 @@ func AddSub(origin *From, targets ...int) error {
 	return nil
 }
 
-func newLiveRoomPlugin(origin *From, targets ...int) (*LiveRoomPlugin, error) {
+func newLiveRoomPlugin(origin *model.From, targets ...int) (*LiveRoomPlugin, error) {
 	l := &LiveRoomPlugin{
 		targetRoomId: make([]int, 0),
 		Listeners:    make([]*Client, 0),
@@ -122,40 +109,36 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 	for _, c := range l.Listeners {
 		if !c.Listening {
 			c.Listening = true
-			c.Client.RegisterCustomEventHandler("ROOM_REAL_TIME_MESSAGE_UPDATE", func(s string) {
-				// 处理自定义事件
-				msg := &RoomUpdateMessage{}
-				err := json.Unmarshal([]byte(s), msg)
-				if err != nil {
-					logger.Logger.Errorln("解析直播间更新消息失败：", err)
+			c.Client.OnLive(func(l *message.Live) {
+				if l.LiveTime == 0 {
+					return
 				}
-				if msg.RoomId == c.RoomID {
-					info, err := getRoomInfo(msg.RoomId)
+				if l.Roomid == c.RoomID {
+					info, err := getRoomInfo(l.Roomid)
 					if info == nil || err != nil {
 						logger.Logger.Errorln("获取直播间信息失败:", err)
 						return
 					}
 					c.Room = info
 					msg := fmt.Sprintf("【%s】开始直播了！\n标题：%s\n观看链接：https://live.bilibili.com/%d", info.Name, info.Title, info.ShortId)
-					notify := &Notification{
+					notify := &model.Notification{
 						Private: c.From.Private,
 						Target:  c.From.Id,
 						Message: msg,
 						Picture: []string{info.Cover},
 					}
-					Notify <- notify
+					queue.Notify <- notify
 					logger.Logger.Printf("直播开始：%d", c.RoomID)
 				}
-				// 处理粉丝数变化事件
 			})
 			err := c.Client.Start()
 			if err != nil {
-				notify := &Notification{
+				notify := &model.Notification{
 					Private: c.From.Private,
 					Target:  c.From.Id,
 					Message: fmt.Sprintf("监听直播间【%d】失败：%s", c.RoomID, err.Error()),
 				}
-				Notify <- notify
+				queue.Notify <- notify
 			}
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"io"
 	"my-qqbot/config"
 	"net/http"
+	"net/url"
 	"regexp"
 )
 
@@ -19,15 +20,13 @@ func Get(urlStr string, args ...string) ([]byte, error) {
 		params = ""
 	}
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, urlStr+params, nil)
+
+	req, err := http.NewRequest(http.MethodGet, url.PathEscape(urlStr+params), nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0")
 	req.Header.Set("Cookie", config.Conf.Bilibili.Cookie)
-	if err != nil {
-		return nil, err
-	}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err

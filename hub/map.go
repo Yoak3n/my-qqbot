@@ -1,4 +1,4 @@
-package command
+package hub
 
 import (
 	"fmt"
@@ -19,6 +19,7 @@ func init() {
 	pluginMap["重置对话"] = resetConversation
 	pluginMap["取消订阅"] = cancelListenDynamic
 	pluginMap["每日新闻"] = subDailyNews
+	pluginMap["取消每日新闻"] = cancelDailyNews
 }
 
 func help(ctx *zero.Ctx) {

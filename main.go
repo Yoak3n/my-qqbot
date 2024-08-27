@@ -1,8 +1,8 @@
 package main
 
 import (
-	"my-qqbot/command"
 	"my-qqbot/config"
+	"my-qqbot/hub"
 
 	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/driver"
@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// 注册插件
-	command.Register()
+	hub.Register()
 	zero.RunAndBlock(&zero.Config{
 		NickName:      config.Conf.NickName,
 		CommandPrefix: "/",
