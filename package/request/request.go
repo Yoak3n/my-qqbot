@@ -8,20 +8,19 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 func Get(urlStr string, args ...string) ([]byte, error) {
 	params := "?"
 	if l := len(args); l > 0 {
-		for i := 0; i < l; i++ {
-			params += args[i]
-		}
+		params += strings.Join(args, "&")
 	} else {
 		params = ""
 	}
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodGet, url.PathEscape(urlStr+params), nil)
+	req, err := http.NewRequest(http.MethodGet, urlStr+url.PathEscape(params), nil)
 	if err != nil {
 		return nil, err
 	}

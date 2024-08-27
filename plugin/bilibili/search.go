@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-const VideoSearch = "https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword="
+const VideoSearch = "https://api.bilibili.com/x/web-interface/wbi/search/type"
 
 func SearchVideoFromKeyword(keyword string) *model.Video {
 	logger.Logger.Println("Searching video from keyword: " + keyword)
 
-	res, err := request.Get(VideoSearch + keyword)
+	res, err := request.Get(VideoSearch, "search_type=video", "keyword="+keyword)
 	logger.Logger.Println(res)
 	if err != nil {
 		logger.Logger.Println(err)

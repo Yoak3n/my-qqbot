@@ -38,6 +38,12 @@ var (
 	hub *LiveRoomPlugin
 )
 
+func init() {
+	hub = &LiveRoomPlugin{
+		targetRoomId: make([]int, 0),
+		Listeners:    make([]*Client, 0),
+	}
+}
 func AddSub(origin *model.From, targets ...int) error {
 	if hub == nil {
 		var err error
@@ -53,6 +59,7 @@ func AddSub(origin *model.From, targets ...int) error {
 		if err != nil {
 			return err
 		}
+		listener.From = origin
 		hub.targetRoomId = append(hub.targetRoomId, target)
 		hub.Listeners = append(hub.Listeners, listener)
 	}
