@@ -21,7 +21,7 @@ func Get(urlStr string, args ...string) ([]byte, error) {
 	}
 	client := &http.Client{}
 	logger.Logger.Info("请求地址: " + params)
-	req, err := http.NewRequest(http.MethodGet, params, nil)
+	req, err := http.NewRequest(http.MethodGet, urlStr+params, nil)
 	if err != nil {
 		return nil, err
 	}
