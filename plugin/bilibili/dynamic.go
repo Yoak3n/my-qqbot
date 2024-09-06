@@ -232,10 +232,18 @@ func makeNotification(origin *model.From, dynamic *Dynamic) {
 		notify.Picture = dynamic.Picture
 	case VideoDynamic:
 		arr := strings.SplitN(dynamic.Extra, `%%`, 2)
-		text := fmt.Sprintf("@%s 投稿了视频：\n《%s》\n"+
-			"视频链接：https://www.bilibili.com/video/%s\n"+
-			"视频简介：%s\n"+
-			"视频封面：", dynamic.Name, arr[0], dynamic.Text, arr[1])
+		// 是否有视频简介
+		text := ""
+		if len(arr) >= 2 && arr[1] != "" {
+			text = fmt.Sprintf("@%s 投稿了视频：\n《%s》\n"+
+				"视频链接：https://www.bilibili.com/video/%s\n"+
+				"视频简介：%s\n"+
+				"视频封面：", dynamic.Name, arr[0], dynamic.Text, arr[1])
+		} else {
+			text = fmt.Sprintf("@%s 投稿了视频：\n《%s》\n"+
+				"视频链接：https://www.bilibili.com/video/%s\n"+
+				"视频封面：", dynamic.Name, arr[0], dynamic.Text)
+		}
 		notify.Message = text
 		notify.Picture = dynamic.Picture
 	case TextDynamic:
