@@ -35,6 +35,8 @@ func TimerEvents() {
 
 }
 
+// SendMessage 发送消息
+// 全局发送消息
 func SendMessage(self ...int64) {
 	for notify := range queue.Notify {
 		for _, item := range self {
@@ -73,7 +75,6 @@ func subDailyNews(ctx *zero.Ctx) {
 	}
 	addNewsSub(from)
 	ctx.Send("订阅每日新闻成功！")
-	// TODO: GLOBAL NOTIFY
 }
 
 func cancelDailyNews(ctx *zero.Ctx) {

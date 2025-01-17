@@ -5,13 +5,18 @@ import (
 	"time"
 )
 
+type eventHub struct {
+	Pool  []*model.Event
+	Begin bool
+}
+
 var (
-	hub *model.EventHub
+	hub *eventHub
 )
 
-func runEventCircle() {
+func (h *eventHub) runEventCircle() {
 	for {
-		for _, event := range hub.Pool {
+		for _, event := range h.Pool {
 			if event.Timer != nil && !event.Running {
 				go func() {
 					if event.Running {

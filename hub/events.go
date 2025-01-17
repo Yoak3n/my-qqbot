@@ -9,6 +9,7 @@ import (
 	"my-qqbot/plugin/bilibili"
 	"my-qqbot/queue"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -69,24 +70,33 @@ func dailyHotNews(from *model.From) {
 func addNewsSub(from *model.From) {
 	now := time.Now().Local()
 	// 每天12点更新，但计算时间间隔的时区问题仍有待测试
+	// time.Local 返回的是系统时区，容器构建中默认使用标准时区
 	lunch := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, time.Local)
 	d := lunch.Sub(now)
 	go dailyHotNews(from)
 	if d < 0 {
 		d += 24 * time.Hour
 	}
-	event := &model.Event{Name: "dailyHotNews", Action: dailyHotNews, Timer: time.NewTimer(d), From: from, Running: false}
+	event := &model.Event{Name: "dailyHotNews" + strconv.FormatInt(from.Id, 10), Action: dailyHotNews, Timer: time.NewTimer(d), From: from, Running: false}
 	if hub == nil {
-		hub = &model.EventHub{
-			Pool: make([]*model.Event, 0),
+		hub = &eventHub{
+			Pool:  make([]*model.Event, 0),
+			Begin: false,
 		}
-		hub.Pool = append(hub.Pool, event)
-	} else {
+	}
+	exist := false
+	for _, e := range hub.Pool {
+		if e.Name == event.Name {
+			exist = true
+			break
+		}
+	}
+	if !exist {
 		hub.Pool = append(hub.Pool, event)
 	}
 	if !hub.Begin {
 		hub.Begin = true
-		go runEventCircle()
+		go hub.runEventCircle()
 	}
 }
 

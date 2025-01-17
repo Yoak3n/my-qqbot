@@ -5,8 +5,8 @@ services:
         - ACCOUNT=123456789
         - WS_ENABLE=true
     ports:
-        - 3001:3001
-        - 6099:6099
+        - "3001:3001"
+        - "6099:6099"
     container_name: napcat
     networks: 
       - qqbot

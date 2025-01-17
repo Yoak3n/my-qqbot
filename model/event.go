@@ -10,9 +10,4 @@ type (
 		Timer   *time.Timer
 		Running bool
 	}
-
-	EventHub struct {
-		Pool  []*Event
-		Begin bool
-	}
 )
