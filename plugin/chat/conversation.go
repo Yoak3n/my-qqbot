@@ -12,7 +12,7 @@ import (
 
 type (
 	ConversationHub struct {
-		Listener map[int64]*Conversation
+		Listener map[model.From]*Conversation
 		queue    chan *Conversation
 		started  bool
 		client   *openai.Client
@@ -28,7 +28,7 @@ var ConversationHubInstance *ConversationHub
 
 func NewConversationHub() *ConversationHub {
 	c := &ConversationHub{
-		Listener: make(map[int64]*Conversation),
+		Listener: make(map[model.From]*Conversation),
 		started:  false,
 		queue:    make(chan *Conversation, 3),
 		client: openai.NewClient(

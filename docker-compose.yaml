@@ -3,7 +3,6 @@ services:
   napcat:
     environment:
         - ACCOUNT=123456789
-        - WS_ENABLE=true
     ports:
         - "3001:3001"
         - "6099:6099"
@@ -13,7 +12,7 @@ services:
     restart: always
     image: mlikiowa/napcat-docker:latest
   driver:
-    image: yoaken/my-qqbot:latest
+    image: yoaken/my-qqbot:u1272
     container_name: my-qqbot
     restart: always
     networks: 

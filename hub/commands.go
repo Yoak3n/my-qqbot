@@ -21,7 +21,7 @@ func Register() {
 	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
 	zero.OnRegex(`^/订阅直播间.*?(\d+)`).Handle(pluginMap["订阅直播间"])
 	zero.OnRegex(`^/订阅动态.*?(\S+)`).Handle(pluginMap["订阅动态"])
-	zero.OnRegex(`^/取消订阅.*?(\S+)`).Handle(pluginMap["取消订阅"])
+	zero.OnRegex(`^/取消订阅动态.*?(\S+)`).Handle(pluginMap["取消订阅动态"])
 	zero.OnCommandGroup([]string{"help", "帮助"}).Handle(pluginMap["帮助"])
 	zero.OnCommandGroup([]string{"重置", "重置对话", "重置会话", "reset", "Reset"}).Handle(pluginMap["重置对话"])
 	zero.OnCommand("test", zero.OnlyGroup).Handle(func(ctx *zero.Ctx) {
@@ -232,7 +232,6 @@ func aiChat(ctx *zero.Ctx) {
 		from.Id = ctx.Event.UserID
 	}
 	chat.Ask(*from, ctx.Event.Message.String())
-	ctx.SendChain()
 }
 
 func cancelListenDynamic(ctx *zero.Ctx) {

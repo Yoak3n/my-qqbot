@@ -1,11 +1,14 @@
 bilibili:
     cookie: xxxxx
     refresh_token: xxxxxxxx
-qwen:
-    address: http://xxxxxxxxxxx
 self: xxxx
 nickname: 
     - "bot"
 ws:
-    address: ws://10.25.25.222:3001
+    address: ws://127.0.0.1:3001
     token: xxxxxx
+
+ai_chat:
+    model: gpt-3.5-turbo
+    key: xxxxx
+    base_url: https://api.openai.com/v1

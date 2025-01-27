@@ -169,7 +169,6 @@ func getDynamicList(baseline string) ([]Dynamic, error) {
 	logger.Logger.Debugln(dynamicList)
 	return dynamicList, nil
 }
-
 func GetDynamicListLoop() {
 	if dynamicHub.Listening {
 		return
@@ -210,7 +209,6 @@ func GetDynamicListLoop() {
 	}
 
 }
-
 func makeNotification(origin *model.From, dynamic *Dynamic) {
 	notify := &model.Notification{
 		Private: origin.Private,
@@ -251,7 +249,7 @@ func makeNotification(origin *model.From, dynamic *Dynamic) {
 		notify.Message = text
 	}
 	if len(dynamicHub.done) > 100 {
-		dynamicHub.done = dynamicHub.done[1:]
+		dynamicHub.done = dynamicHub.done[19:]
 	}
 	dynamicHub.done = append(dynamicHub.done, dynamic.Id)
 
