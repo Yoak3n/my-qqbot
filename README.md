@@ -46,6 +46,7 @@ ai_chat: # 目前推荐使用deep-seek的api，也可以使用openai的api（可
   model: "deepseek-chat" # 调用的模型名
 ```
 ## docker部署
-参考项目的`docker-compose.yaml`文件，使用docker-compose一键部署，也可参照其内容用docker部署
+参考项目的`docker-compose.yaml`文件，使用docker-compose一键部署，需要把`config.yaml`中ws的地址改为`ws://napcat:3001/`
+也可参照其内容用docker部署
 
 
