@@ -9,8 +9,13 @@ require (
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/v2 v2.1.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	github.com/tidwall/gjson v1.16.0
+	github.com/tidwall/gjson v1.18.0
 	github.com/wdvxdr1123/ZeroBot v1.7.4
+)
+
+require (
+	github.com/openai/openai-go v0.1.0-alpha.49 // indirect
+	github.com/tidwall/sjson v1.2.5 // indirect
 )
 
 require (

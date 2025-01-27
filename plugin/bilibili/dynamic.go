@@ -250,7 +250,11 @@ func makeNotification(origin *model.From, dynamic *Dynamic) {
 		text := fmt.Sprintf("@%s 发布了一条动态：\n%s", dynamic.Name, dynamic.Text)
 		notify.Message = text
 	}
+	if len(dynamicHub.done) > 100 {
+		dynamicHub.done = dynamicHub.done[1:]
+	}
 	dynamicHub.done = append(dynamicHub.done, dynamic.Id)
+
 	queue.Notify <- notify
 
 }

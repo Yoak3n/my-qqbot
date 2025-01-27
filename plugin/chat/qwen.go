@@ -1,38 +1,22 @@
 package chat
 
 import (
-	"encoding/json"
-	"fmt"
-	"my-qqbot/config"
-	"my-qqbot/package/request"
-	"strconv"
+	"my-qqbot/model"
 )
 
-func Ask(id int64, question string, option ...string) *ResponseBody {
-	AskApi := config.Conf.QWen.Address + "/v1/chat"
-	req := &RequestBody{
-		Id:      strconv.FormatInt(id, 10),
-		Content: question,
+func Ask(from *model.From, question string) {
+	if ConversationHubInstance == nil {
+		ConversationHubInstance = NewConversationHub()
 	}
-	if len(option) > 0 {
-		req.Preset = option[0]
+	conversation, ok := ConversationHubInstance.Listener[from]
+	if !ok {
+		conversation = NewConversation(from)
 	}
-	data, err := json.Marshal(req)
-	res := request.Post(AskApi, data)
-	answer := &ResponseBody{}
-	err = json.Unmarshal(res, answer)
-	if err != nil {
-		return nil
-	}
-	return answer
+	conversation.AddMessage(question)
+	ConversationHubInstance.queue <- conversation
 }
 
-func Reset(id int64) bool {
-	ResetApi := config.Conf.QWen.Address + "/v1/chat/reset"
-	_, err := request.Get(fmt.Sprintf("%s/%d", ResetApi, id))
-	if err != nil {
-		return false
-	}
+func Reset(from *model.From) bool {
+	delete(ConversationHubInstance.Listener, from)
 	return true
-
 }

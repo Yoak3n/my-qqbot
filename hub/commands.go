@@ -16,6 +16,7 @@ import (
 )
 
 func Register() {
+
 	zero.OnCommand("登录哔哩哔哩").Handle(pluginMap["登录哔哩哔哩"])
 	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
 	zero.OnRegex(`^/订阅直播间.*?(\d+)`).Handle(pluginMap["订阅直播间"])
@@ -27,7 +28,16 @@ func Register() {
 	})
 	zero.OnCommand("每日新闻").Handle(pluginMap["每日新闻"])
 	zero.OnCommand("取消每日新闻").Handle(pluginMap["取消每日新闻"])
-	zero.OnMessage().Handle(pluginMap["ai对话"])
+	chatRule := func(ctx *zero.Ctx) bool {
+		if ctx.Event.MessageType == "private" {
+			return true
+		} else if ctx.Event.MessageType == "group" {
+			return ctx.Event.IsToMe
+		} else {
+			return false
+		}
+	}
+	zero.OnMessage(chatRule).Handle(pluginMap["ai对话"])
 	go SendMessage(config.Conf.Self)
 
 }
@@ -191,11 +201,15 @@ func listenDynamic(ctx *zero.Ctx) {
 
 func resetConversation(ctx *zero.Ctx) {
 	ok := false
+	from := &model.From{}
 	if ctx.Event.MessageType == "private" {
-		ok = chat.Reset(ctx.Event.UserID)
+		from.Id = ctx.Event.UserID
+		from.Private = true
 	} else {
-		ok = chat.Reset(ctx.Event.GroupID)
+		from.Id = ctx.Event.GroupID
+		from.Private = false
 	}
+	ok = chat.Reset(from)
 	if ok {
 		ctx.SendChain(message.Text("重置对话成功"))
 	} else {
@@ -207,13 +221,18 @@ func aiChat(ctx *zero.Ctx) {
 	if strings.HasPrefix(ctx.Event.RawMessage, "/") {
 		return
 	}
-	r := &chat.ResponseBody{}
+
+	from := &model.From{}
 	if ctx.Event.MessageType == "group" {
-		r = chat.Ask(ctx.Event.GroupID, ctx.Event.Message.String())
+
+		from.Private = false
+		from.Id = ctx.Event.GroupID
 	} else {
-		r = chat.Ask(ctx.Event.UserID, ctx.Event.Message.String())
+		from.Private = true
+		from.Id = ctx.Event.UserID
 	}
-	ctx.SendChain(message.Text(r.Answer))
+	chat.Ask(from, ctx.Event.Message.String())
+	ctx.SendChain()
 }
 
 func cancelListenDynamic(ctx *zero.Ctx) {

@@ -15,7 +15,7 @@ type (
 		NickName []string
 		Bilibili Bilibili
 		WsDriver WsDriver
-		QWen     QWen
+		AIChat   AIChat
 	}
 	Bilibili struct {
 		Cookie       string
@@ -25,9 +25,10 @@ type (
 		Address string
 		Token   string
 	}
-	QWen struct {
-		Address string
-		Token   string
+	AIChat struct {
+		BaseUrl string
+		Model   string
+		Key     string
 	}
 )
 
@@ -58,7 +59,12 @@ func loadToConfiguration() {
 	Conf.WsDriver.Address = k.String("ws.address")
 	Conf.WsDriver.Token = k.String("ws.token")
 
-	Conf.QWen.Address = strings.TrimRight(k.String("qwen.address"), "/")
+	Conf.AIChat.BaseUrl = k.String("ai_chat.base_url")
+	Conf.AIChat.Model = k.String("ai_chat.model")
+	Conf.AIChat.Key = k.String("ai_chat.key")
+
+	Conf.AIChat.BaseUrl = strings.TrimRight(Conf.AIChat.BaseUrl, "/")
+
 }
 func UpdateBilibiliCookie(cookie string, refreshToken string) {
 	Conf.Bilibili.Cookie = cookie
