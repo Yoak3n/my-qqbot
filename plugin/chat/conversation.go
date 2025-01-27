@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 	"my-qqbot/config"
@@ -11,7 +12,7 @@ import (
 
 type (
 	ConversationHub struct {
-		Listener map[*model.From]*Conversation
+		Listener map[int64]*Conversation
 		queue    chan *Conversation
 		started  bool
 		client   *openai.Client
@@ -19,7 +20,7 @@ type (
 	Conversation struct {
 		Ctx   context.Context
 		Param *openai.ChatCompletionNewParams
-		From  *model.From
+		From  model.From
 	}
 )
 
@@ -27,7 +28,7 @@ var ConversationHubInstance *ConversationHub
 
 func NewConversationHub() *ConversationHub {
 	c := &ConversationHub{
-		Listener: make(map[*model.From]*Conversation),
+		Listener: make(map[int64]*Conversation),
 		started:  false,
 		queue:    make(chan *Conversation, 3),
 		client: openai.NewClient(
@@ -42,22 +43,24 @@ func (c *ConversationHub) Start() {
 	if c.started {
 		return
 	}
+	c.started = true
 	for {
 		select {
 		case con := <-c.queue:
+			fmt.Println(con.Param.Messages.String())
 			completion, err := c.client.Chat.Completions.New(con.Ctx, *con.Param)
 			if err != nil {
 				con.Reply(err.Error())
 				return
 			}
 			answer := completion.Choices[0].Message.Content
-			con.UpdateAssistantMessage(answer)
+			con.UpdateAssistantMessage(completion.Choices[0].Message)
 			con.Reply(answer)
 		}
 	}
 }
 
-func NewConversation(from *model.From) *Conversation {
+func NewConversation(from model.From) *Conversation {
 	return &Conversation{
 		Ctx: context.Background(),
 		Param: &openai.ChatCompletionNewParams{
@@ -71,8 +74,8 @@ func NewConversation(from *model.From) *Conversation {
 func (c *Conversation) AddMessage(msg string) {
 	c.Param.Messages.Value = append(c.Param.Messages.Value, openai.UserMessage(msg))
 }
-func (c *Conversation) UpdateAssistantMessage(reply string) {
-	c.Param.Messages.Value = append(c.Param.Messages.Value, openai.AssistantMessage(reply))
+func (c *Conversation) UpdateAssistantMessage(reply openai.ChatCompletionMessage) {
+	c.Param.Messages.Value = append(c.Param.Messages.Value, reply)
 }
 func (c *Conversation) Reply(reply string) {
 	notify := &model.Notification{

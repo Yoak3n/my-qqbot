@@ -231,7 +231,7 @@ func aiChat(ctx *zero.Ctx) {
 		from.Private = true
 		from.Id = ctx.Event.UserID
 	}
-	chat.Ask(from, ctx.Event.Message.String())
+	chat.Ask(*from, ctx.Event.Message.String())
 	ctx.SendChain()
 }
 
