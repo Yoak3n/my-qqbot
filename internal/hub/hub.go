@@ -1,7 +1,7 @@
 package hub
 
 import (
-	"my-qqbot/model"
+	"my-qqbot/internal/model"
 	"time"
 )
 

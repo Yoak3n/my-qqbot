@@ -3,10 +3,10 @@ package hub
 import (
 	"fmt"
 	"my-qqbot/config"
-	"my-qqbot/model"
+	"my-qqbot/internal/model"
+	"my-qqbot/internal/queue"
 	"my-qqbot/plugin/bilibili"
 	"my-qqbot/plugin/chat"
-	"my-qqbot/queue"
 	"os"
 	"strconv"
 	"strings"

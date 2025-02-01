@@ -12,13 +12,14 @@ services:
     restart: always
     image: mlikiowa/napcat-docker:latest
   driver:
-    image: yoaken/my-qqbot:u1272
+    image: yoaken/my-qqbot:u21
     container_name: my-qqbot
     restart: always
     networks: 
       - qqbot
     volumes:
       - ./config.yaml:/app/config.yaml
+      - data/:/app/data
 networks:
   qqbot:
     driver: bridge

@@ -2,7 +2,7 @@ package main
 
 import (
 	"my-qqbot/config"
-	"my-qqbot/hub"
+	"my-qqbot/internal/hub"
 
 	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/driver"

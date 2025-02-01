@@ -2,7 +2,7 @@ package bilibili
 
 import (
 	"github.com/tidwall/gjson"
-	"my-qqbot/model"
+	"my-qqbot/internal/model"
 	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
 	"strings"

@@ -2,12 +2,15 @@ package chat
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 	"my-qqbot/config"
-	"my-qqbot/model"
-	"my-qqbot/queue"
+	"my-qqbot/internal/model"
+	"my-qqbot/internal/queue"
+	"my-qqbot/package/util"
+	"strings"
 )
 
 type (
@@ -55,6 +58,16 @@ func (c *ConversationHub) Start() {
 			}
 			answer := completion.Choices[0].Message.Content
 			con.UpdateAssistantMessage(completion.Choices[0].Message)
+			marshal, err := json.Marshal(completion.Choices[0].Message)
+			if err != nil {
+				return
+			}
+			if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") {
+				reason := util.GetReasoningContent(marshal)
+				if reason != "" {
+					con.Reply(reason)
+				}
+			}
 			con.Reply(answer)
 		}
 	}

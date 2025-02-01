@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"my-qqbot/model"
+	"my-qqbot/internal/model"
 )
 
 func Ask(from model.From, question string) {

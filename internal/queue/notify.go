@@ -1,6 +1,8 @@
 package queue
 
-import "my-qqbot/model"
+import (
+	"my-qqbot/internal/model"
+)
 
 var Notify chan *model.Notification
 

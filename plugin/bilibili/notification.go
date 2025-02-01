@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/Akegarasu/blivedm-go/message"
 	"my-qqbot/config"
-	"my-qqbot/model"
+	model2 "my-qqbot/internal/model"
+	"my-qqbot/internal/queue"
 	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
-	"my-qqbot/queue"
 	"time"
 
 	"github.com/Akegarasu/blivedm-go/client"
@@ -23,9 +23,9 @@ type (
 	Client struct {
 		RoomID    int
 		Client    *client.Client
-		Room      *model.Room
+		Room      *model2.Room
 		Listening bool
-		From      *model.From
+		From      *model2.From
 	}
 
 	RoomUpdateMessage struct {
@@ -44,7 +44,7 @@ func init() {
 		Listeners:    make([]*Client, 0),
 	}
 }
-func AddSub(origin *model.From, targets ...int) error {
+func AddSub(origin *model2.From, targets ...int) error {
 	if hub == nil {
 		var err error
 		hub, err = newLiveRoomPlugin(origin, targets...)
@@ -67,7 +67,7 @@ func AddSub(origin *model.From, targets ...int) error {
 	return nil
 }
 
-func newLiveRoomPlugin(origin *model.From, targets ...int) (*LiveRoomPlugin, error) {
+func newLiveRoomPlugin(origin *model2.From, targets ...int) (*LiveRoomPlugin, error) {
 	l := &LiveRoomPlugin{
 		targetRoomId: make([]int, 0),
 		Listeners:    make([]*Client, 0),
@@ -128,7 +128,7 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 					}
 					c.Room = info
 					msg := fmt.Sprintf("【%s】开始直播了！\n标题：%s\n观看链接：https://live.bilibili.com/%d", info.Name, info.Title, info.ShortId)
-					notify := &model.Notification{
+					notify := &model2.Notification{
 						Private: c.From.Private,
 						Target:  c.From.Id,
 						Message: msg,
@@ -140,7 +140,7 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 			})
 			err := c.Client.Start()
 			if err != nil {
-				notify := &model.Notification{
+				notify := &model2.Notification{
 					Private: c.From.Private,
 					Target:  c.From.Id,
 					Message: fmt.Sprintf("监听直播间【%d】失败：%s", c.RoomID, err.Error()),
@@ -151,14 +151,14 @@ func (l *LiveRoomPlugin) listenLiveStart() {
 	}
 }
 
-func getRoomInfo(id int) (*model.Room, error) {
+func getRoomInfo(id int) (*model2.Room, error) {
 	res, err := request.Get("https://api.live.bilibili.com/room/v1/Room/get_info", fmt.Sprintf("room_id=%d", id))
 	if err != nil {
 		return nil, err
 	}
-	room := &model.Room{
+	room := &model2.Room{
 		ShortId: id,
-		User:    &model.User{},
+		User:    &model2.User{},
 	}
 	result := gjson.ParseBytes(res)
 	if result.Get("code").Int() == 0 {
@@ -176,7 +176,7 @@ func getRoomInfo(id int) (*model.Room, error) {
 	return nil, errors.New("get room information failed")
 }
 
-func getUserInfo(uid int64) *model.User {
+func getUserInfo(uid int64) *model2.User {
 	// use local database to avoid anti-crawler
 	count := 0
 	for {
@@ -194,7 +194,7 @@ func getUserInfo(uid int64) *model.User {
 			continue
 		}
 		data := result.Get("data")
-		u := &model.User{
+		u := &model2.User{
 			UID:           uid,
 			Avatar:        data.Get("card.face").String(),
 			Name:          data.Get("card.name").String(),
