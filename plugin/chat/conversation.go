@@ -2,14 +2,11 @@ package chat
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"github.com/openai/openai-go"
-	"github.com/openai/openai-go/option"
 	"my-qqbot/config"
 	"my-qqbot/internal/model"
 	"my-qqbot/internal/queue"
-	"my-qqbot/package/util"
+	"my-qqbot/package/deep_seek"
+	"my-qqbot/package/logger"
 	"strings"
 )
 
@@ -18,11 +15,11 @@ type (
 		Listener map[model.From]*Conversation
 		queue    chan *Conversation
 		started  bool
-		client   *openai.Client
+		client   *deep_seek.Client
 	}
 	Conversation struct {
 		Ctx   context.Context
-		Param *openai.ChatCompletionNewParams
+		Param *deep_seek.ChatCompletionNewParams
 		From  model.From
 	}
 )
@@ -34,11 +31,10 @@ func NewConversationHub() *ConversationHub {
 		Listener: make(map[model.From]*Conversation),
 		started:  false,
 		queue:    make(chan *Conversation, 3),
-		client: openai.NewClient(
-			option.WithBaseURL(config.Conf.AIChat.BaseUrl),
-			option.WithAPIKey(config.Conf.AIChat.Key), // defaults to os.LookupEnv("OPENAI_API_KEY")
-		),
+		client:   deep_seek.NewClient(),
 	}
+	c.client.SetBaseUrl(config.Conf.AIChat.BaseUrl)
+	c.client.SetAPIKey(config.Conf.AIChat.Key)
 	go c.Start()
 	return c
 }
@@ -50,24 +46,22 @@ func (c *ConversationHub) Start() {
 	for {
 		select {
 		case con := <-c.queue:
-			fmt.Println(con.Param.Messages.String())
-			completion, err := c.client.Chat.Completions.New(con.Ctx, *con.Param)
+			completion, err := c.client.ChatCompletion(con.Ctx, *con.Param)
 			if err != nil {
 				con.Reply(err.Error())
+				logger.Logger.Error(err)
 				return
 			}
 			answer := completion.Choices[0].Message.Content
-			con.UpdateAssistantMessage(completion.Choices[0].Message)
-			marshal, err := json.Marshal(completion.Choices[0].Message)
-			if err != nil {
-				return
-			}
-			if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") {
-				reason := util.GetReasoningContent(marshal)
+			con.UpdateAssistantMessage(answer)
+			// 兼容硅基流动的推理模型名
+			if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") || strings.HasSuffix(config.Conf.AIChat.Model, "R1") {
+				reason := completion.Choices[0].Message.ReasoningContent
 				if reason != "" {
 					con.Reply(reason)
 				}
 			}
+
 			con.Reply(answer)
 		}
 	}
@@ -76,19 +70,27 @@ func (c *ConversationHub) Start() {
 func NewConversation(from model.From) *Conversation {
 	return &Conversation{
 		Ctx: context.Background(),
-		Param: &openai.ChatCompletionNewParams{
-			Model:    openai.F(config.Conf.AIChat.Model),
-			Messages: openai.F([]openai.ChatCompletionMessageParamUnion{}),
+		Param: &deep_seek.ChatCompletionNewParams{
+			Model:    config.Conf.AIChat.Model,
+			Messages: make([]deep_seek.Message, 0),
 		},
 		From: from,
 	}
 }
 
 func (c *Conversation) AddMessage(msg string) {
-	c.Param.Messages.Value = append(c.Param.Messages.Value, openai.UserMessage(msg))
+	m := deep_seek.Message{
+		Role:    deep_seek.UserRole,
+		Content: msg,
+	}
+	c.Param.Messages = append(c.Param.Messages, m)
 }
-func (c *Conversation) UpdateAssistantMessage(reply openai.ChatCompletionMessage) {
-	c.Param.Messages.Value = append(c.Param.Messages.Value, reply)
+func (c *Conversation) UpdateAssistantMessage(reply string) {
+	m := deep_seek.Message{
+		Role:    deep_seek.AssistantRole,
+		Content: reply,
+	}
+	c.Param.Messages = append(c.Param.Messages, m)
 }
 func (c *Conversation) Reply(reply string) {
 	notify := &model.Notification{

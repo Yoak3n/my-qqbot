@@ -14,11 +14,6 @@ require (
 )
 
 require (
-	github.com/openai/openai-go v0.1.0-alpha.49 // indirect
-	github.com/tidwall/sjson v1.2.5 // indirect
-)
-
-require (
 	github.com/FloatTech/ttl v0.0.0-20220715042055-15612be72f5b // indirect
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
