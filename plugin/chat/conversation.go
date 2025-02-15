@@ -53,17 +53,25 @@ func (c *ConversationHub) Start() {
 				logger.Logger.Error(err)
 				return
 			}
-			answer := completion.Choices[0].Message.Content
-			con.UpdateAssistantMessage(answer)
-			// 兼容硅基流动的推理模型名
-			if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") || strings.HasSuffix(config.Conf.AIChat.Model, "R1") {
-				reason := completion.Choices[0].Message.ReasoningContent
-				if reason != "" {
-					con.Reply(fmt.Sprintf("推理过程：\n%s", reason))
+			if completion == nil {
+				con.Reply("请求失败")
+				logger.Logger.Error("请求失败")
+				return
+			}
+			if len(completion.Choices) > 0 {
+				answer := completion.Choices[0].Message.Content
+				con.UpdateAssistantMessage(answer)
+				// 兼容硅基流动的推理模型名
+				if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") || strings.HasSuffix(config.Conf.AIChat.Model, "R1") {
+					reason := completion.Choices[0].Message.ReasoningContent
+					if reason != "" {
+						con.Reply(fmt.Sprintf("推理过程：\n%s", reason))
+					}
 				}
+
+				con.Reply(answer)
 			}
 
-			con.Reply(answer)
 		}
 	}
 }

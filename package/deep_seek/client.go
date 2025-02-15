@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"my-qqbot/package/logger"
 	"net/http"
@@ -38,8 +40,11 @@ func (c *Client) ChatCompletion(ctx context.Context, param ChatCompletionNewPara
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
 	res, err := http.DefaultClient.Do(req)
-	if err != nil || res.StatusCode != http.StatusOK {
+	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("请求失败，状态码：%d", res.StatusCode))
 	}
 	b, err = io.ReadAll(res.Body)
 	if err != nil {
