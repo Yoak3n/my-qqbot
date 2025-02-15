@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"my-qqbot/config"
 	"my-qqbot/internal/model"
 	"my-qqbot/internal/queue"
@@ -58,7 +59,7 @@ func (c *ConversationHub) Start() {
 			if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") || strings.HasSuffix(config.Conf.AIChat.Model, "R1") {
 				reason := completion.Choices[0].Message.ReasoningContent
 				if reason != "" {
-					con.Reply(reason)
+					con.Reply(fmt.Sprintf("推理过程：\n%s", reason))
 				}
 			}
 
