@@ -1,11 +1,12 @@
 package bilibili
 
 import (
-	"github.com/tidwall/gjson"
 	"my-qqbot/internal/model"
-	"my-qqbot/package/logger"
 	"my-qqbot/package/request"
 	"strings"
+
+	"github.com/Yoak3n/gulu/logger"
+	"github.com/tidwall/gjson"
 )
 
 const VideoSearch = "https://api.bilibili.com/x/web-interface/wbi/search/type"

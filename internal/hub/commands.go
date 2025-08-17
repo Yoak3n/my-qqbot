@@ -16,7 +16,6 @@ import (
 )
 
 func Register() {
-
 	zero.OnCommand("登录哔哩哔哩").Handle(pluginMap["登录哔哩哔哩"])
 	zero.OnRegex(`^/启用订阅直播间.*?(\d+)(?:\D+(\d+))*`).Handle(pluginMap["订阅直播间"])
 	zero.OnRegex(`^/订阅直播间.*?(\d+)`).Handle(pluginMap["订阅直播间"])

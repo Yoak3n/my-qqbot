@@ -2,22 +2,23 @@ package hub
 
 import (
 	"fmt"
-	"github.com/tidwall/gjson"
 	"io"
-	model2 "my-qqbot/internal/model"
+	"my-qqbot/internal/model"
 	"my-qqbot/internal/queue"
-	"my-qqbot/package/logger"
 	"my-qqbot/plugin/bilibili"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Yoak3n/gulu/logger"
+	"github.com/tidwall/gjson"
 )
 
 const HotWord = "https://s.search.bilibili.com/main/hotword"
 
 // 每天12点更新，但计算时间间隔的时区问题仍有待测试
-func dailyHotNews(from *model2.From) {
+func dailyHotNews(from *model.From) {
 	res, err := http.Get(HotWord)
 	if err != nil || res.StatusCode != 200 {
 		e := fmt.Errorf("get hotword failed, err: %v", err)
@@ -35,7 +36,7 @@ func dailyHotNews(from *model2.From) {
 		content += fmt.Sprintf("%d. %s\n", index+1, word.Get("show_name").String())
 	}
 	content, _ = strings.CutSuffix(content, "\n")
-	notification := &model2.Notification{
+	notification := &model.Notification{
 		Private: from.Private,
 		Target:  from.Id,
 		Message: content,
@@ -58,7 +59,7 @@ func dailyHotNews(from *model2.From) {
 	}
 	pics := make([]string, 0)
 	pics = append(pics, hottestVideo.Cover)
-	notify := &model2.Notification{
+	notify := &model.Notification{
 		Private: from.Private,
 		Target:  from.Id,
 		Message: message,
@@ -67,7 +68,7 @@ func dailyHotNews(from *model2.From) {
 	queue.Notify <- notify
 }
 
-func addNewsSub(from *model2.From) {
+func addNewsSub(from *model.From) {
 	now := time.Now().Local()
 	// 每天12点更新，但计算时间间隔的时区问题仍有待测试
 	// time.Local 返回的是系统时区，容器构建中默认使用标准时区
@@ -77,10 +78,10 @@ func addNewsSub(from *model2.From) {
 	if d < 0 {
 		d += 24 * time.Hour
 	}
-	event := &model2.Event{Name: "dailyHotNews" + strconv.FormatInt(from.Id, 10), Action: dailyHotNews, Timer: time.NewTimer(d), From: from, Running: false}
+	event := &model.Event{Name: "dailyHotNews" + strconv.FormatInt(from.Id, 10), Action: dailyHotNews, Timer: time.NewTimer(d), From: from, Running: false}
 	if hub == nil {
 		hub = &eventHub{
-			Pool:  make([]*model2.Event, 0),
+			Pool:  make([]*model.Event, 0),
 			Begin: false,
 		}
 	}
@@ -100,7 +101,7 @@ func addNewsSub(from *model2.From) {
 	}
 }
 
-func cancelNewsSub(from *model2.From) {
+func cancelNewsSub(from *model.From) {
 	for index, event := range hub.Pool {
 		if event.Name == "dailyHotNews" && event.From == from {
 			event.Timer.Stop()

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Yoak3n/gulu/logger"
 	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/driver"
 	"my-qqbot/config"
@@ -11,6 +12,7 @@ func init() {
 }
 
 func main() {
+	logger.Init()
 	// 注册插件
 	zero.OnCommand("hello").
 		Handle(func(ctx *zero.Ctx) {

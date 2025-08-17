@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Yoak3n/gulu/logger"
 	"my-qqbot/config"
 	"my-qqbot/internal/hub"
 
@@ -9,6 +10,7 @@ import (
 )
 
 func main() {
+	logger.Init()
 	// 注册插件
 	hub.Register()
 	zero.RunAndBlock(&zero.Config{

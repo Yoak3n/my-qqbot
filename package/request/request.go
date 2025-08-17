@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"io"
 	"my-qqbot/config"
-	"my-qqbot/package/logger"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/Yoak3n/gulu/logger"
 )
 
 func Get(urlStr string, args ...string) ([]byte, error) {

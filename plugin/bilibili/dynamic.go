@@ -3,17 +3,18 @@ package bilibili
 import (
 	"errors"
 	"fmt"
-	"github.com/tidwall/gjson"
 	"io"
 	"my-qqbot/config"
 	"my-qqbot/internal/model"
 	"my-qqbot/internal/queue"
-	"my-qqbot/package/logger"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Yoak3n/gulu/logger"
+	"github.com/tidwall/gjson"
 )
 
 const (

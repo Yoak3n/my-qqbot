@@ -3,11 +3,11 @@ package chat
 import (
 	"context"
 	"fmt"
+	"github.com/Yoak3n/gulu/logger"
 	"my-qqbot/config"
 	"my-qqbot/internal/model"
 	"my-qqbot/internal/queue"
 	"my-qqbot/package/deep_seek"
-	"my-qqbot/package/logger"
 	"strings"
 )
 
