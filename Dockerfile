@@ -10,5 +10,6 @@ LABEL authors="Yoake"
 WORKDIR /app
 COPY --from=builder /app/my-qqbot/config.example.yaml config.yaml
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs/
-COPY --from=builder /app/my-qqbot/main main
+COPY --from=builder /app/my-qqbot/main main\
+ENV TZ=Asia/Shanghai
 CMD ["./main"]

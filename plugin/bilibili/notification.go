@@ -178,9 +178,17 @@ func getRoomInfo(id int) (*model.Room, error) {
 func getUserInfo(uid int64) *model.User {
 	// use local database to avoid anti-crawler
 	count := 0
+	delay := 1
+
 	for {
 		res, err := request.Get("https://api.bilibili.com/x/web-interface/card", fmt.Sprintf("mid=%d", uid))
 		if err != nil {
+			count += 1
+			if count > 10 {
+				return nil
+			}
+			time.Sleep(time.Second * time.Duration(delay))
+			delay *= 2
 			continue
 		}
 		result := gjson.ParseBytes(res)
@@ -189,7 +197,8 @@ func getUserInfo(uid int64) *model.User {
 			if count > 10 {
 				return nil
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * time.Duration(delay))
+			delay *= 2
 			continue
 		}
 		data := result.Get("data")

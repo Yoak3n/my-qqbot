@@ -5,19 +5,16 @@ import (
 )
 
 func Ask(from model.From, question string) {
-	if ConversationHubInstance == nil {
-		ConversationHubInstance = NewConversationHub()
-	}
-	conversation, ok := ConversationHubInstance.Listener[from]
+	conversation, ok := GlobalConversationHub().Listener[from]
 	if !ok {
 		conversation = NewConversation(from)
-		ConversationHubInstance.Listener[from] = conversation
+		GlobalConversationHub().Listener[from] = conversation
 	}
 	conversation.AddMessage(question)
-	ConversationHubInstance.queue <- conversation
+	GlobalConversationHub().queue <- conversation
 }
 
 func Reset(from *model.From) bool {
-	delete(ConversationHubInstance.Listener, *from)
+	delete(GlobalConversationHub().Listener, *from)
 	return true
 }

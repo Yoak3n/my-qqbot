@@ -1,18 +1,21 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
-	"os"
-	"strings"
 )
 
 type (
 	Configuration struct {
 		Self     int64
 		NickName []string
+		Admin    int64
 		Bilibili Bilibili
 		WsDriver WsDriver
 		AIChat   AIChat
@@ -22,6 +25,7 @@ type (
 		RefreshToken string
 	}
 	WsDriver struct {
+		Type    string
 		Address string
 		Token   string
 	}
@@ -39,24 +43,32 @@ var (
 
 func init() {
 	k = koanf.New(".")
-	configPath := "config.yaml"
-	err := k.Load(file.Provider(configPath), yaml.Parser())
-	if err != nil {
-		panic(err)
-	}
 	Conf = &Configuration{
 		Bilibili: Bilibili{},
 		NickName: make([]string, 3),
+	}
+	configPath := "config.yaml"
+	err := k.Load(file.Provider(configPath), yaml.Parser())
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return
+		}
+		panic(err)
 	}
 	loadToConfiguration()
 }
 func loadToConfiguration() {
 	Conf.Self = k.Int64("self")
 	Conf.NickName = k.Strings("nickname")
+	Conf.Admin = k.Int64("admin")
 	Conf.Bilibili.Cookie = k.String("bilibili.cookie")
 	Conf.Bilibili.RefreshToken = k.String("bilibili.refresh_token")
 
+	Conf.WsDriver.Type = k.String("ws.type")
 	Conf.WsDriver.Address = k.String("ws.address")
+	if !strings.HasPrefix(Conf.WsDriver.Address, "ws://") && Conf.WsDriver.Type == "client" {
+		Conf.WsDriver.Address = "ws://" + Conf.WsDriver.Address
+	}
 	Conf.WsDriver.Token = k.String("ws.token")
 
 	Conf.AIChat.BaseUrl = k.String("ai_chat.base_url")

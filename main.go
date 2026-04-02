@@ -1,25 +1,31 @@
 package main
 
 import (
-	"github.com/Yoak3n/gulu/logger"
 	"my-qqbot/config"
 	"my-qqbot/internal/hub"
-
+	"github.com/Yoak3n/gulu/logger"
 	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/driver"
 )
 
-func main() {
+func init() {
 	logger.Init()
 	// 注册插件
 	hub.Register()
+}
+
+func main() {
+	drivers := make([]zero.Driver, 0)
+	if config.Conf.WsDriver.Type == "server" {
+		drivers = append(drivers, driver.NewWebSocketServer(30, config.Conf.WsDriver.Address, config.Conf.WsDriver.Token))
+	} else {
+		drivers = append(drivers, driver.NewWebSocketClient(config.Conf.WsDriver.Address, config.Conf.WsDriver.Token))
+	}
+
 	zero.RunAndBlock(&zero.Config{
 		NickName:      config.Conf.NickName,
 		CommandPrefix: "/",
 		SuperUsers:    []int64{config.Conf.Self},
-		Driver: []zero.Driver{
-			// 正向 WS
-			driver.NewWebSocketClient(config.Conf.WsDriver.Address, config.Conf.WsDriver.Token),
-		},
+		Driver:        drivers,
 	}, nil)
 }

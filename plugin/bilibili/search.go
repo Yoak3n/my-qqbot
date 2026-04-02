@@ -24,8 +24,8 @@ func SearchVideoFromKeyword(keyword string) *model.Video {
 	firstVideo := result.Get("data.result.0")
 	logger.Logger.Println(firstVideo)
 	title := firstVideo.Get("title").String()
-	title = strings.Replace(title, "<em class=\"keyword\">", "", -1) // remove keyword highlight
-	title = strings.Replace(title, "</em>", "", -1)
+	title = strings.ReplaceAll(title, "<em class=\"keyword\">", "")
+	title = strings.ReplaceAll(title, "</em>", "")
 	video := &model.Video{
 		AID:         firstVideo.Get("aid").Int(),
 		BVID:        firstVideo.Get("bvid").String(),

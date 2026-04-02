@@ -3,12 +3,14 @@ package chat
 import (
 	"context"
 	"fmt"
-	"github.com/Yoak3n/gulu/logger"
 	"my-qqbot/config"
 	"my-qqbot/internal/model"
 	"my-qqbot/internal/queue"
 	"my-qqbot/package/deep_seek"
 	"strings"
+	"sync"
+
+	"github.com/Yoak3n/gulu/logger"
 )
 
 type (
@@ -25,7 +27,10 @@ type (
 	}
 )
 
-var ConversationHubInstance *ConversationHub
+var (
+	conversationHubInstance *ConversationHub
+	once                    sync.Once
+)
 
 func NewConversationHub() *ConversationHub {
 	c := &ConversationHub{
@@ -39,40 +44,45 @@ func NewConversationHub() *ConversationHub {
 	go c.Start()
 	return c
 }
+
+func GlobalConversationHub() *ConversationHub {
+	once.Do(func() {
+		conversationHubInstance = NewConversationHub()
+	})
+	return conversationHubInstance
+}
+
 func (c *ConversationHub) Start() {
 	if c.started {
 		return
 	}
 	c.started = true
 	for {
-		select {
-		case con := <-c.queue:
-			completion, err := c.client.ChatCompletion(con.Ctx, *con.Param)
-			if err != nil {
-				con.Reply(err.Error())
-				logger.Logger.Error(err)
-				return
-			}
-			if completion == nil {
-				con.Reply("请求失败")
-				logger.Logger.Error("请求失败")
-				return
-			}
-			if len(completion.Choices) > 0 {
-				answer := completion.Choices[0].Message.Content
-				con.UpdateAssistantMessage(answer)
-				// 兼容硅基流动的推理模型名
-				if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") || strings.HasSuffix(config.Conf.AIChat.Model, "R1") {
-					reason := completion.Choices[0].Message.ReasoningContent
-					if reason != "" {
-						con.Reply(fmt.Sprintf("推理过程：\n%s", reason))
-					}
-				}
-
-				con.Reply(answer)
-			}
-
+		con := <-c.queue
+		completion, err := c.client.ChatCompletion(con.Ctx, *con.Param)
+		if err != nil {
+			con.Reply(err.Error())
+			logger.Logger.Error(err)
+			return
 		}
+		if completion == nil {
+			con.Reply("请求失败")
+			logger.Logger.Error("请求失败")
+			return
+		}
+		if len(completion.Choices) > 0 {
+			answer := completion.Choices[0].Message.Content
+			con.UpdateAssistantMessage(answer)
+			// 兼容硅基流动的推理模型名
+			if strings.HasSuffix(config.Conf.AIChat.Model, "reasoner") || strings.HasSuffix(config.Conf.AIChat.Model, "R1") {
+				reason := completion.Choices[0].Message.ReasoningContent
+				if reason != "" {
+					con.Reply(fmt.Sprintf("推理过程：\n%s", reason))
+				}
+			}
+			con.Reply(answer)
+		}
+
 	}
 }
 

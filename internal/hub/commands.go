@@ -28,11 +28,12 @@ func Register() {
 	zero.OnCommand("每日新闻").Handle(pluginMap["每日新闻"])
 	zero.OnCommand("取消每日新闻").Handle(pluginMap["取消每日新闻"])
 	chatRule := func(ctx *zero.Ctx) bool {
-		if ctx.Event.MessageType == "private" {
+		switch ctx.Event.MessageType {
+		case "private":
 			return true
-		} else if ctx.Event.MessageType == "group" {
+		case "group":
 			return ctx.Event.IsToMe
-		} else {
+		default:
 			return false
 		}
 	}
@@ -50,7 +51,7 @@ func SendMessage(self ...int64) {
 	for notify := range queue.Notify {
 		for _, item := range self {
 			bot := zero.GetBot(item)
-			var chain []message.MessageSegment
+			var chain []message.Segment
 			if len(notify.Picture) == 0 {
 				chain = append(chain, message.Text(notify.Message))
 			} else {
@@ -108,17 +109,15 @@ func loginBili(ctx *zero.Ctx) {
 	ctx.Send("正在获取哔哩哔哩Cookie，请稍等...")
 	for {
 		msg := <-bilibili.Scan
-		if msg == "scan" {
+		switch msg {
+		case "scan":
 			data, _ := os.ReadFile("qrcode.png")
 			ctx.SendChain(message.Text("请使用哔哩哔哩App扫描二维码"), message.ImageBytes(data))
-		} else if msg == "done" {
+		case "done":
 			ctx.Send("登录成功！")
-			return
-		} else {
+		default:
 			ctx.Send("登录失败，请重新尝试登录！")
-			return
 		}
-
 	}
 }
 

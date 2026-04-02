@@ -184,6 +184,7 @@ func GetDynamicListLoop() {
 			if err != nil {
 				logger.Logger.Errorln(err)
 			}
+			time.Sleep(time.Second * 10)
 			continue
 		}
 		dynamicHub.lock.RLock()

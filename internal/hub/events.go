@@ -102,10 +102,23 @@ func addNewsSub(from *model.From) {
 }
 
 func cancelNewsSub(from *model.From) {
-	for index, event := range hub.Pool {
-		if event.Name == "dailyHotNews" && event.From == from {
-			event.Timer.Stop()
-			hub.Pool = append(hub.Pool[:index], hub.Pool[index+1:]...)
+	if hub == nil {
+		return
+	}
+	targetName := "dailyHotNews" + strconv.FormatInt(from.Id, 10)
+	for i := 0; i < len(hub.Pool); {
+		event := hub.Pool[i]
+		if event != nil &&
+			event.Name == targetName &&
+			event.From != nil &&
+			event.From.Id == from.Id &&
+			event.From.Private == from.Private {
+			if event.Timer != nil {
+				event.Timer.Stop()
+			}
+			hub.Pool = append(hub.Pool[:i], hub.Pool[i+1:]...)
+			continue
 		}
+		i++
 	}
 }

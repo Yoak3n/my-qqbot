@@ -15,20 +15,20 @@ var (
 )
 
 func (h *eventHub) runEventCircle() {
-	for {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
 		for _, event := range h.Pool {
-			if event.Timer != nil && !event.Running {
-				go func() {
-					if event.Running {
-						return
-					}
-					event.Running = true
-					<-event.Timer.C
-					event.Action(event.From)
-					event.Timer.Reset(24 * time.Hour)
-					event.Running = false
-				}()
+			if event == nil || event.Timer == nil || event.Running {
+				continue
 			}
+			event.Running = true
+			go func(e *model.Event) {
+				<-e.Timer.C
+				e.Action(e.From)
+				e.Timer.Reset(24 * time.Hour)
+				e.Running = false
+			}(event)
 		}
 	}
 }

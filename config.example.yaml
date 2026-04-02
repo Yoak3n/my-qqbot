@@ -5,8 +5,9 @@ self: xxxx
 nickname: 
     - "bot"
 ws:
-    address: ws://127.0.0.1:3001
-    token: xxxxxx
+    type: "server"  # 服务器端 or client 客户端
+    address: 0.0.0.0:3001
+    token: xxxxxxxxx
 
 ai_chat:
     model: gpt-3.5-turbo
